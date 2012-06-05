@@ -1,0 +1,1 @@
+MosaikAligner -in /l2/users/whelanch/gene_rearrange/seq.mosaik.dat -out /l2/users/whelanch/gene_rearrange/s_aln.mosaik.dat -ia /l2/users/whelanch/1000genomes/ref/human_g1k_v37.fasta.mosaik.dat -mm 4 -act 20 -mhp 100 -hs 14 -rur /l2/users/whelanch/gene_rearrange/unaligned.mosaik.fq -p 12 -bw 13 -j /l2/users/whelanch/1000genomes/ref/human_g1k_v37.fasta.mosaik.15

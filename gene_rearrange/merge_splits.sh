@@ -1,0 +1,7 @@
+#!/bin/bash
+
+MERGED_BAM=$1
+WORKING_DIR=$2
+SPLIT_BAM_NAME=$3
+
+samtools merge -n $MERGED_BAM $WORKING_DIR/*/$SPLIT_BAM_NAME

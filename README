@@ -1,3 +1,4 @@
 Projects included:
 
 Hylobatidae BPS - Scripts for testing the significance of overlaps between breakpoint regions and genomic features.
+gene_rearrange - SV detection and BS mapping

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+set -u
+
+DATA_FILE=$1
+OUTPUT_FILE=$2
+
+#cutadapt -a GATCGGAAGAGCGGTTCAGCAGGAATGCCGAG -a ACACTCTTTCCCTACACGACGCTCTTCCGATCT -e 0.1 -O 1 $1 > $2 
+cutadapt -q 20 -a AGATCGGAAGAGC $1 > $2
