@@ -29,7 +29,8 @@ if (not frag_type in ['MP', 'PE', 'MP_NOPE']):
 read1_files = glob.glob(read_file_dir + read_file1 + "*")
 read2_files = glob.glob(read_file_dir + read_file2 + "*")
 
-assert(len(read1_files) == len(read2_files))
+assert(len(read1_files) > 0), "didn't find any files matching " + read_file_dir + read_file1 + "*"
+assert(len(read1_files) == len(read2_files)), "found %d read1 files and %d read2 files; quitting!" % (len(read1_files), len(read2_files))
 num_chunks = len(read1_files)
 
 jobs = 0
