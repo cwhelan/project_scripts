@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_Alu.bed3.bed "Alu"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_ERV.bed3.bed "ERV"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_LINE.bed3.bed "LINE"
+
+./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/rmsk_SVA.sorted.bed3.bed "SVA"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/Hylobatidae_BPs/biomart_ensembl_genes.ucsc.bed "Gene"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest1.hg19.bed3.bed "Methylation Desert"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/Hylobatidae_BPs/BCM_Lowest5.hg19.bed3.bed "Low5 Methylation Desert"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/genome_refs/ucsc/hg19/segmental_duplications_merged.bed "Segmental Duplication"
+
+# ./setup_wd.sh hylobatidae_bps_sorted.bed "BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+# ./setup_wd.sh hylobatidae_bps_HLA.bed "HLA BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+# ./setup_wd.sh hylobatidae_bps_HLE.bed "HLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+# ./setup_wd.sh hylobatidae_bps_NLE.bed "NLE BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+# ./setup_wd.sh hylobatidae_bps_SSY.bed "SSY BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+# ./setup_wd.sh hylobatidae_bps_common.bed "Common BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+# ./setup_wd.sh hylobatidae_bps_intermediate.bed "Intermediate BP Region" /l2/users/whelanch/Hylobatidae_BPs/wgEncodeOpenChromSynthH1hescPk.bed3.bed "OCR"
+
+
+
+
