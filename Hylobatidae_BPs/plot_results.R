@@ -43,5 +43,5 @@ plot_shift_hits <- function(shift_results, title) {
 
 plot_shift_hits(shifted_bp_hits, paste("Number of ", region_name, "s that Overlap a", feature_name, sep=""))
 plot_shift_hits(shifted_feature_hits, paste("Number of ", feature_name, "s that Overlap a ", region_name, sep=""))
-plot_shift_hits(shifted_bases_overlapped, paste("Portion of BP Regions in ", feature_name, "s (bp)", sep=""))
+plot_shift_hits(shifted_bases_overlapped, paste("Portion of ," region_name, "s in ", feature_name, "s (bp)", sep=""))
 dev.off()
