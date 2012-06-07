@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import re
+
 prev_results_file = open("results.txt", "r")
 
 first_line_fields = prev_results_file.readline().rstrip().split("\t")
