@@ -9,16 +9,14 @@ script_path = os.path.dirname( os.path.realpath( __file__ ) )
 prev_results_file = open("results.txt", "r")
 
 first_line_fields = prev_results_file.readline().rstrip().split("\t")
-description = first_line_fields[0]
-description = description.replace("_", " ")
-bp_name = re.match("Number of (.+)s that Overlap a (.+)$", description).groups()[0]
-feature_name = re.match("Number of (.+)s that Overlap a (.+)$", description).groups()[1]
+bp_name = first_line_fields[2]
+feature_name = first_line_fields[3]
 
-num_real_bp_hits = first_line_fields[2]
+num_real_bp_hits = first_line_fields[4]
 prev_results_file.readline()
-num_real_feature_hits = prev_results_file.readline().rstrip().split("\t")[2]
+num_real_feature_hits = prev_results_file.readline().rstrip().split("\t")[4]
 prev_results_file.readline()
-real_bases_overlapped = prev_results_file.readline().rstrip().split("\t")[2]
+real_bases_overlapped = prev_results_file.readline().rstrip().split("\t")[4]
 prev_results_file.readline()
 
 prev_results_file.close()
