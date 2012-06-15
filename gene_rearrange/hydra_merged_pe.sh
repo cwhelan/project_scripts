@@ -18,7 +18,7 @@ MAX_CONCORDANT=`echo "($MEDIAN_ISIZE + 4 * $MAD_ISIZE + 0.5) / 1" | bc`
 MIN_CONCORDANT=`echo "($MEDIAN_ISIZE - 4 * $MAD_ISIZE + 0.5) / 1" | bc`
 
 echo "bamToBed -i $BAM_FILE -tag NM pairDiscordants.py -i stdin -m hydra -y $MIN_CONCORDANT -z $MAX_CONCORDANT > $WORKING_DIR/$FILE_PREFIX.bedpe"
-bamToBed -i $BAM_FILE -tag NM | pairDiscordants.py -i stdin -m hydra -y $MIN_CONCORDANT -z $MAX_CONCORDANT > $WORKING_DIR/$FILE_PREFIX.bedpe
+bamToBed -ed -i $BAM_FILE | pairDiscordants.py -i stdin -m hydra -y $MIN_CONCORDANT -z $MAX_CONCORDANT > $WORKING_DIR/$FILE_PREFIX.bedpe
 
 #echo "bamToBed -i $BAM_FILE -tag NM | pairDiscordants.py -i stdin -m hydra -y 2574 -z 7278 > $WORKING_DIR/$FILE_PREFIX.bedpe"
 #bamToBed -i $BAM_FILE -tag NM | \
