@@ -14,7 +14,7 @@ echo "java -Xms512m -Xmx2048m -jar ${GASV_HOME}/bin/BAMToGASV.jar $BAM_FILE"
 java -Xms512m -Xmx2048m -jar ${GASV_HOME}/bin/BAMToGASV.jar $BAM_FILE
 
 echo "java -Xms512m -Xmx2048m -jar ${GASV_HOME}/bin/GASV.jar --minClusterSize 3 --output reads ${BAM_FILE}.gasv.in"
-java -Xms512m -Xmx2048m -jar ${GASV_HOME}/bin/GASV.jar --minClusterSize 3 --output reads ${BAM_FILE}.gasv.in
+java -Xms512m -Xmx2048m -jar ${GASV_HOME}/bin/GASV.jar --minClusterSize 3 --output reads --batch ${BAM_FILE}.gasv.in
 
 #echo "Pruning Redundant/Overlapping Predictions...."
 #${GASVPRO_HOME}/scripts/pruneClusters.pl ${FILE_PREFIX}_${LIBRARY_NAME}.deletion.clusters ESP > prune_clusters.out
