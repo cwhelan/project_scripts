@@ -5,6 +5,6 @@ do
     echo "Re-plotting $d"
     cd $d
     cp results.txt results.txt.old
-    python ../replot.py
+    python /l2/users/whelanch/project_scripts/Hylobatidae_BPs/replot.py
     cd ..
 done
