@@ -12,7 +12,7 @@ for line in clusterFile:
     c1 = fields[1]
     region1 = fields[2].split(",")
     s1 = region1[0]
-    e1 = region2[0]
+    e1 = region1[0]
     c2 = fields[3]
     region2 = fields[4].split(",")
     s2 = region2[0]
