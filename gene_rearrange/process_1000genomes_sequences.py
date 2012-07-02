@@ -8,7 +8,7 @@ sequence_index = open(sys.argv[1], 'r')
 
 scripts_dir = '/l2/users/whelanch/project_scripts/gene_rearrange/'
 index_dir = '/l2/users/whelanch/genome_refs/10kg/hg19/'
-thousand_genomes_data = '/l2/users/whelanch/1000genomes/data/pilot_data/'
+thousand_genomes_data = '/l2/users/whelanch/1000genomes/pilot_data/'
 
 current_dir = os.getcwd()
 
