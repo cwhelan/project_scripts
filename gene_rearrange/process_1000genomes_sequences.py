@@ -38,7 +38,7 @@ for line in sequence_index:
                       read_group,
                       'PE',
                       'STDFQ']).communicate()[0]
-    subprocess.popen(['condor_submit_dag', '-no_submit', 'novoalign_first_tier.dag'])
+    subprocess.Popen(['condor_submit_dag', '-no_submit', 'novoalign_first_tier.dag'])
     master_dag.write("JOB\t" + read_group + "\t" + current_dir + "/" + read_group + "/novoalign_first_tier.dag.condor.sub")
     os.chdir(current_dir)
 
