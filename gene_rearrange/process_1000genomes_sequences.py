@@ -8,7 +8,7 @@ sequence_index = open(sys.argv[1], 'r')
 
 scripts_dir = '/l2/users/whelanch/project_scripts/gene_rearrange/'
 index_dir = '/l2/users/whelanch/genome_refs/10kg/hg19/'
-1k_data = '/l2/users/whelanch/1000genomes/data/pilot_data/'
+thousand_genomes_data = '/l2/users/whelanch/1000genomes/data/pilot_data/'
 
 current_dir = os.getcwd()
 
@@ -28,8 +28,8 @@ for line in sequence_index:
     os.chdir(read_group)
     subprocess.popen([scripts_dir + 'build_novoalign_tier1_pe.py',
                       current_dir,
-                      1k_data + seq_file,
-                      1k_data + paired_file,
+                      thousand_genomes_data + seq_file,
+                      thousand_genomes_data + paired_file,
                       isize,
                       str(float(isize) * .15),
                       'Random',
