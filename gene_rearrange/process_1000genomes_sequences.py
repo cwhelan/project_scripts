@@ -28,6 +28,7 @@ for line in sequence_index:
     os.chdir(read_group)
     subprocess.Popen([scripts_dir + 'build_novoalign_tier1.py',
                       current_dir,
+                      index_dir + 'hg19.fa.nix',
                       thousand_genomes_data + seq_file,
                       thousand_genomes_data + paired_file,
                       isize,
