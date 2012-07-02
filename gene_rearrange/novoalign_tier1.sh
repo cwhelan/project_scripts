@@ -22,16 +22,15 @@ fi
 TARGET_ISIZE=$5
 ISIZE_SD=$6
 LIBRARY_NAME=$7
-
-RG=${LIBRARY_NAME}
+SAMPLE=$8
+RG=$9
 PLATFORM="ILLUMINA"
-LIBRARY=${LIBRARY_NAME}
 
 
 /g/whelanch/software/bin/novoalign -d $REF \
                          -c 1 -f $f1 $f2 \
                          -F $FORMAT -k -K calfile.txt -i MP $5,$6 150,50 \
 			 -a GATCGGAAGAGCGGTTCAGCA GATCGGAAGAGCGTCGTGTAGGGA \
-			 -r $REPEAT_REPORT -oSAM $"@RG\tID:$RG\tPU:$PLATFORM\tLB:$LIBRARY\tSM:$LIBRARY" | \
+			 -r $REPEAT_REPORT -oSAM $"@RG\tID:$RG\tPU:$PLATFORM\tLB:$LIBRARY_NAME\tSM:$SAMPLE" | \
 	/g/whelanch/software/bin/samtools view -Sb - > ./novoalign.bam 
 /g/whelanch/software/bin/samtools sort -n ./novoalign.bam novoalign_sorted

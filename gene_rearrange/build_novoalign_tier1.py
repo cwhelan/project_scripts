@@ -7,8 +7,8 @@ import subprocess
 import time
 import gzip
 
-if not len(sys.argv) == 11:
-	print "Usage: build_novoalign_tier1.py working_dir reference read_file1 read_file2 target_isize isize_sd repeat_report library_name frag_type(MP|PE|MP_NOPE) qual_format" 
+if not len(sys.argv) == 13:
+	print "Usage: build_novoalign_tier1.py working_dir reference read_file1 read_file2 target_isize isize_sd repeat_report library_name sample_name read_group_name frag_type(MP|PE|MP_NOPE) qual_format" 
 	exit(1)
 
 working_dir = sys.argv[1]
@@ -19,8 +19,10 @@ target_isize = sys.argv[5]
 isize_sd = sys.argv[6]
 repeat_report = sys.argv[7]
 library_name = sys.argv[8]
-frag_type = sys.argv[9]
-qual_format = sys.argv[10]
+sample_name = sys.argv[9]
+read_group_name = sys.argv[10]
+frag_type = sys.argv[11]
+qual_format = sys.argv[12]
 
 if (not frag_type in ['MP', 'PE', 'MP_NOPE']):
 	print "valid frag types are MP, PE, and MP_NOPE"
@@ -124,6 +126,9 @@ for i in xrange(0,num_chunks):
 	dagfile.write("VARS {0} isize_sd=\"{1}\"\n".format(chunk_job, isize_sd))
 	dagfile.write("VARS {0} repeat_report=\"{1}\"\n".format(chunk_job, repeat_report))
 	dagfile.write("VARS {0} library_name=\"{1}\"\n".format(chunk_job, library_name))
+	dagfile.write("VARS {0} sample_name=\"{1}\"\n".format(chunk_job, sample_name))
+	dagfile.write("VARS {0} read_group_name=\"{1}\"\n".format(chunk_job, read_group_name))
+	
 	dagfile.write("RETRY {0} 2\n".format(chunk_job))
 	param_file = open("wd{0}/novo_params".format(i), 'w')
 	param_file.write("FORMAT={0}\n".format(qual_format))
