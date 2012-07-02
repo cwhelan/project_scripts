@@ -26,7 +26,7 @@ for line in sequence_index:
     isize = fields[17]
     os.mkdir(read_group)
     os.chdir(read_group)
-    subprocess.Popen([scripts_dir + 'build_novoalign_tier1_pe.py',
+    subprocess.Popen([scripts_dir + 'build_novoalign_tier1.py',
                       current_dir,
                       thousand_genomes_data + seq_file,
                       thousand_genomes_data + paired_file,
