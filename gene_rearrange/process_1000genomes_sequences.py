@@ -15,7 +15,7 @@ current_dir = os.getcwd()
 master_dag = open('master.dag', 'w')
 
 for line in sequence_index:
-    fields = line.split()
+    fields = line.split("\t")
     seq_file = fields[0]
     paired_file = fields[20]
     if not seq_file.find("_1") > -1 and paired_file.find("_2") > -1:
@@ -39,7 +39,7 @@ for line in sequence_index:
                       'PE',
                       'STDFQ']).communicate()[0]
     subprocess.popen(['condor_submit_dag', '-no_submit', 'novoalign_first_tier.dag'])
-    master_dag.write('JOB\t' + read_group + '\t' + current_dir + '/' + read_group + '/novoalign_first_tier.dag.condor.sub')
+    master_dag.write("JOB\t" + read_group + "\t" + current_dir + "/" + read_group + "/novoalign_first_tier.dag.condor.sub")
     os.chdir(current_dir)
 
 master_dag.close()
