@@ -18,7 +18,7 @@ for line in sequence_index:
     fields = line.split("\t")
     seq_file = fields[0]
     paired_file = fields[19]
-    if not seq_file.find("_1") > -1 and paired_file.find("_2") > -1:
+    if not (seq_file.find("_1") > -1 and paired_file.find("_2") > -1):
         continue
     read_group = fields[2] # run_id
     sample = fields[9]
@@ -37,7 +37,9 @@ for line in sequence_index:
            read_group,
            'PE',
            'STDFQ']
-
+    if os.path.isdir(path_name):
+        print "read group " + read_group + " already exists; skipping"
+        continue
     os.mkdir(read_group)
     os.chdir(read_group)
     subprocess.Popen([scripts_dir + 'build_novoalign_tier1.py',
