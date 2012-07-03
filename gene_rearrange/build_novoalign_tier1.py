@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import time
 import gzip
+from cStringIO import StringIO
 
 if not len(sys.argv) == 13:
 	print "Usage: build_novoalign_tier1.py working_dir reference read_file1 read_file2 target_isize isize_sd repeat_report library_name sample_name read_group_name frag_type(MP|PE|MP_NOPE) qual_format" 
@@ -35,7 +36,10 @@ def split_file(name, prefix, chunk_size):
 		basename = prefix.split(".gz")[0]
 		lines_read = 0
 		chunk = 0
-		read_file = gzip.open(name, "r")
+		p = subprocess.Popen(["zcat",name], 
+				     stdout = subprocess.PIPE)
+		read_file = StringIO(p.communicate()[0])
+		assert p.returncode == 0 
 		chunk_filename = "{0}.{1:04}.gz".format(basename,chunk)
 		print "opening {0} for writing".format(chunk_filename)
 		chunk_file = gzip.open(chunk_filename, 'w')
