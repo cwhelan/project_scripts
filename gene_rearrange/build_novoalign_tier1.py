@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess
 import time
-import gzip
 from cStringIO import StringIO
 
 if not len(sys.argv) == 13:
@@ -42,7 +41,8 @@ def split_file(name, prefix, chunk_size):
 		assert p.returncode == 0 
 		chunk_filename = "{0}.{1:04}.gz".format(basename,chunk)
 		print "opening {0} for writing".format(chunk_filename)
-		chunk_file = gzip.open(chunk_filename, 'w')
+		p = subprocess.Popen("gzip -c > " + chunk_filename, shell=True, stdin=subprocess.PIPE)
+		chunk_file = p.stdin
 		for line in read_file:
 			chunk_file.write(line)
 			lines_read = lines_read + 1
@@ -53,7 +53,10 @@ def split_file(name, prefix, chunk_size):
 				chunk = chunk + 1
 				chunk_filename = "{0}.{1:04}.gz".format(basename,chunk)
 				print "opening {0} for writing".format(chunk_filename)
-				chunk_file = gzip.open(chunk_filename, 'w')
+				p.communicate()
+				p = subprocess.Popen("gzip -c > " + chunk_filename, shell=True, stdin=subprocess.PIPE)
+				chunk_file = open_gzip_file(chunk_filename)
+		p.communicate()
 		return lines_read
 	else:
 		split_cmd = "split -a 4 -d -l {2} {0} {1}.".format(name, prefix, chunk_size)
