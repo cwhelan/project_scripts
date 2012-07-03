@@ -55,7 +55,7 @@ def split_file(name, prefix, chunk_size):
 				print "opening {0} for writing".format(chunk_filename)
 				p.communicate()
 				p = subprocess.Popen("gzip -c > " + chunk_filename, shell=True, stdin=subprocess.PIPE)
-				chunk_file = open_gzip_file(chunk_filename)
+				chunk_file = p.stdin
 		p.communicate()
 		return lines_read
 	else:
