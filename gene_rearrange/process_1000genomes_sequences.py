@@ -37,27 +37,27 @@ for line in sequence_index:
            read_group,
            'PE',
            'STDFQ']
-    if os.path.isdir(path_name):
+    if os.path.isdir(read_group):
         print "read group " + read_group + " already exists; skipping"
-        continue
-    os.mkdir(read_group)
-    os.chdir(read_group)
-    subprocess.Popen([scripts_dir + 'build_novoalign_tier1.py',
-                      current_dir + '/' + read_group,
-                      index_dir + 'hg19.fa.nix',
-                      thousand_genomes_data + seq_file,
-                      thousand_genomes_data + paired_file,
-                      isize,
-                      str(float(isize) * .15),
-                      'Random',
-                      library,
-                      sample,
-                      read_group,
-                      'PE',
-                      'STDFQ']).communicate()[0]
-    subprocess.Popen(['condor_submit_dag', '-no_submit', 'novoalign_first_tier.dag'])
+    else:
+        os.mkdir(read_group)
+        os.chdir(read_group)
+        subprocess.Popen([scripts_dir + 'build_novoalign_tier1.py',
+                          current_dir + '/' + read_group,
+                          index_dir + 'hg19.fa.nix',
+                          thousand_genomes_data + seq_file,
+                          thousand_genomes_data + paired_file,
+                          isize,
+                          str(float(isize) * .15),
+                          'Random',
+                          library,
+                          sample,
+                          read_group,
+                          'PE',
+                          'STDFQ']).communicate()[0]
+        subprocess.Popen(['condor_submit_dag', '-no_submit', 'novoalign_first_tier.dag'])
+        os.chdir(current_dir)
     master_dag.write("JOB\t" + read_group + "\t" + current_dir + "/" + read_group + "/novoalign_first_tier.dag.condor.sub")
-    os.chdir(current_dir)
 
 master_dag.close()
     
