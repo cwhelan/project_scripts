@@ -30,7 +30,7 @@ for line in sequence_index:
            thousand_genomes_data + seq_file,
            thousand_genomes_data + paired_file,
            isize,
-           str(float(isize) * .15),
+           str(int(round(float(isize) * .15))),
            'Random',
            library,
            sample,
@@ -57,7 +57,7 @@ for line in sequence_index:
                           'STDFQ']).communicate()[0]
         subprocess.Popen(['condor_submit_dag', '-no_submit', 'novoalign_first_tier.dag'])
         os.chdir(current_dir)
-    master_dag.write("JOB\t" + read_group + "\t" + current_dir + "/" + read_group + "/novoalign_first_tier.dag.condor.sub")
+    master_dag.write("JOB\t" + read_group + "\t" + current_dir + "/" + read_group + "/novoalign_first_tier.dag.condor.sub\n")
 
 master_dag.close()
     
