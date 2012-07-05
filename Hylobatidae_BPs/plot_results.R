@@ -31,7 +31,7 @@ plot_random_hist <- function(realnum, iterations, title, outfile, metric, region
                       max(1 / 30,med)),
                       fill="steelblue", alpha=.6)
                     + geom_vline(xintercept=realnum, colour="red", size=2)
-
+}
 
 plot_random_hist(real_bps_hit, bps_with_hits, paste("Number of ", region_name, "s that Overlap a ", feature_name, sep=""), filename, "REGION_HITS", region_name, feature_name)
 plot_random_hist(real_features_hit, feature_hits, paste("Number of ", feature_name, "s that Overlap a ", region_name, sep=""), filename, "FEATURE_HITS", region_name, feature_name)
