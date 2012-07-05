@@ -28,7 +28,8 @@ plot_random_hist <- function(realnum, iterations, title, outfile, metric, region
   med <- median(iterations$Overlaps)
  p + geom_histogram(binwidth=ifelse(med == 0,
                       (max(iterations$Overlaps) - min(iterations$Overlaps)) / 30,
-                      max(1 / 30,med), fill="steelblue", alpha=.6))
+                      max(1 / 30,med)),
+                      fill="steelblue", alpha=.6)
                     + geom_vline(xintercept=realnum, colour="red", size=2)
 
 
