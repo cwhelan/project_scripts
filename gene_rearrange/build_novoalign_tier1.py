@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import time
+import re
 from cStringIO import StringIO
 
 if not len(sys.argv) == 13:
