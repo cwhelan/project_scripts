@@ -65,7 +65,7 @@ def split_file(name, prefix, chunk_size):
 		return 1
 
 def prep_submit_file(submit_file_dir, submit_file_name, read_group):
-	template = open(submit_file_dir + submit_file_name, "r")
+	template = open(submit_file_dir + "/" submit_file_name, "r")
 	outfile = open(submit_file_name, "w")
 	for line in template.readlines():
 		line = re.sub("(Log\s+=\s+)(\S+)", r'\1/tmp/' + read_group + r'/\2', line)
