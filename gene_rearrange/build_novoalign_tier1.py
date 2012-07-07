@@ -70,7 +70,7 @@ def prep_submit_file(submit_file_dir, submit_file_name, read_group):
 	outfile = open(submit_file_name, "w")
 	for line in template.readlines():
 		line = re.sub("(Log\s+=\s+)(\S+)", r'\1/tmp/' + read_group + r'/\2', line)
-	outfile.write(line)
+		outfile.write(line)
 		
 
 if not read_file1.endswith("gz"):
