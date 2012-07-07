@@ -38,7 +38,7 @@ for line in sequence_index:
            'PE',
            'STDFQ']
     if os.path.isdir(read_group):
-        print "read group " + read_group + " already exists; skipping"
+        print "read group " + read_group + " already exists; skipping"        
     else:
         os.mkdir(read_group)
         os.chdir(read_group)

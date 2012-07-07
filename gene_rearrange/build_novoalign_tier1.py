@@ -64,6 +64,14 @@ def split_file(name, prefix, chunk_size):
 		subprocess.call(split_cmd, shell=True)
 		return 1
 
+def prep_submit_file(submit_file_dir, submit_file_name, read_group):
+	template = open(submit_file_dir + submit_file_name, "r")
+	outfile = open(submit_file_name, "w")
+	for line in template.readlines():
+		line = re.sub("(Log\s+=\s+)(\S+)", r'\1/tmp/' + read_group + r'/\2', line)
+	outfile.write(line)
+		
+
 if not read_file1.endswith("gz"):
 	wcout = subprocess.Popen("wc -l {0}".format(read_file1), shell=True, stdout=subprocess.PIPE).communicate()[0]
 	file_length = int(wcout.split()[0])
@@ -89,12 +97,14 @@ if read_file1.endswith("gz"):
 
 jobs = 0
 
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/fastqc.desc DIR {1}/\n".format(jobs, working_dir))
+submit_file_dir = "/l2/users/whelanch/gene_rearrange/submit_files"
+prep_submit_file(submit_file_dir, "fastqc.desc", read_group_name)
+dagfile.write("JOB {0} {1}{2}  DIR {1}/\n".format(jobs, working_dir, "fastqc.desc"))
 dagfile.write("VARS {0} read_file=\"{1}\"\n".format(jobs, read_file1))
 
 jobs = jobs + 1
 
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/fastqc.desc DIR {1}/\n".format(jobs, working_dir))
+dagfile.write("JOB {0} {1}{2} DIR {1}/\n".format(jobs, working_dir, "fastqc.desc"))
 dagfile.write("VARS {0} read_file=\"{1}\"\n".format(jobs, read_file2))
 
 jobs = jobs + 1
@@ -121,7 +131,9 @@ for i in xrange(0,num_chunks):
 		submit_file = "novoalign_tier1_pe.desc"
 	if frag_type == "MP_NOPE":
 		submit_file = "novoalign_tier1_mp_no_pe.desc"
-	dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/{2} DIR {3}wd{1}/\n".format(chunk_job, i, submit_file, working_dir))
+	prep_submit_file(submit_file_dir, submit_file, read_group_name)
+	
+	dagfile.write("JOB {0} {3}{2} DIR {3}wd{1}/\n".format(chunk_job, i, submit_file, working_dir))
 	if gzipped:
 		dagfile.write("VARS {0} read_file1=\"{2}/wd{1}/{3}.{1:04d}.gz\"\n".format(chunk_job, i, working_dir, file1_prefix))
 		dagfile.write("VARS {0} read_file2=\"{2}/wd{1}/{3}.{1:04d}.gz\"\n".format(chunk_job, i, working_dir, file2_prefix))
@@ -145,7 +157,9 @@ for i in xrange(0,num_chunks):
 jobs = jobs + num_chunks
 
 merge_job = jobs
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/merge_bams.desc DIR {1}\n".format(merge_job, working_dir))
+submit_file = "merge_bams.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}{2} DIR {1}\n".format(merge_job, working_dir, submit_file))
 dagfile.write("VARS {0} output=\"novoalign_tier1\"\n".format(merge_job))
 dagfile.write("VARS {0} working_dir=\"{1}\"\n".format(merge_job, working_dir))
 dagfile.write("VARS {0} in_file_names=\"novoalign_sorted.bam\"\n".format(merge_job))
@@ -153,19 +167,25 @@ dagfile.write("VARS {0} in_file_names=\"novoalign_sorted.bam\"\n".format(merge_j
 jobs = jobs + 1
 
 merge_calfiles_job = jobs
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/merge_calfiles.desc DIR {1}\n".format(merge_calfiles_job, working_dir))
+submit_file = "merge_calfiles.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}{2} DIR {1}\n".format(merge_calfiles_job, working_dir, submit_file))
 dagfile.write("VARS {0} working_dir=\"{1}\"\n".format(merge_calfiles_job, working_dir))
 
 jobs = jobs + 1
 
 clean_sam_job = jobs
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/clean_sam.desc DIR {1}\n".format(clean_sam_job, working_dir))
+submit_file = "clean_sam.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}{2} DIR {1}\n".format(clean_sam_job, working_dir, submit_file))
 dagfile.write("VARS {0} input=\"{1}/{2}\"\n".format(clean_sam_job, working_dir, "novoalign_tier1_sort.bam"))
 
 jobs = jobs + 1
 
 mark_dups_job = jobs
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/mark_dups.desc DIR {1}\n".format(mark_dups_job, working_dir))
+submit_file = "mark_dups.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}{2} DIR {1}\n".format(mark_dups_job, working_dir, submit_file))
 dagfile.write("VARS {0} input=\"{1}/{2}\"\n".format(mark_dups_job, working_dir, "novoalign_tier1_sort_clean.bam"))
 
 jobs = jobs + 1
@@ -175,19 +195,25 @@ if frag_type == "PE":
 	submit_file = "calculate_insert_sizes_pe.desc"
 else:
 	submit_file = "calculate_insert_sizes_mp.desc"
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/{1} DIR {2}\n".format(calculate_insert_sizes_job, submit_file, working_dir))
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+
+dagfile.write("JOB {0} {2}{1} DIR {2}\n".format(calculate_insert_sizes_job, submit_file, working_dir))
 dagfile.write("VARS {0} input=\"{1}/{2}\"\n".format(calculate_insert_sizes_job, working_dir, "novoalign_tier1_sort_clean_rmdup.bam"))
 
 jobs = jobs + 1
 
 cleanup_job = jobs
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/cleanup_working_dirs.desc DIR {1}\n".format(cleanup_job, working_dir))
+submit_file = "cleanup_working_dirs.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}{2} DIR {1}\n".format(cleanup_job, working_dir, submit_file))
 dagfile.write("VARS {0} working_dir=\"{1}\"\n".format(cleanup_job, working_dir))
 
 jobs = jobs + 1
 
 extract_discordants_job = jobs
-dagfile.write("JOB {0} /l2/users/whelanch/gene_rearrange/submit_files/extract_discordant_reads.desc DIR {1}\n".format(extract_discordants_job, working_dir))
+submit_file = "extract_discordant_reads.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}{2} DIR {1}\n".format(extract_discordants_job, working_dir, submit_file))
 dagfile.write("VARS {0} bamfile=\"{1}/{2}\"\n".format(extract_discordants_job, working_dir, "novoalign_tier1_sort_clean_mdup_nsort.bam"))
 
 dagfile.write("PARENT ")
