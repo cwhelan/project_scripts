@@ -134,7 +134,7 @@ for i in xrange(0,num_chunks):
 		submit_file = "novoalign_tier1_mp_no_pe.desc"
 	prep_submit_file(submit_file_dir, submit_file, read_group_name)
 	
-	dagfile.write("JOB {0} {3}/{2} DIR {3}wd{1}/\n".format(chunk_job, i, submit_file, working_dir))
+	dagfile.write("JOB {0} {3}/{2} DIR {3}/wd{1}/\n".format(chunk_job, i, submit_file, working_dir))
 	if gzipped:
 		dagfile.write("VARS {0} read_file1=\"{2}/wd{1}/{3}.{1:04d}.gz\"\n".format(chunk_job, i, working_dir, file1_prefix))
 		dagfile.write("VARS {0} read_file2=\"{2}/wd{1}/{3}.{1:04d}.gz\"\n".format(chunk_job, i, working_dir, file2_prefix))
