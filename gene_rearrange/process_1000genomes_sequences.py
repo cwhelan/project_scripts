@@ -38,7 +38,7 @@ for line in sequence_index:
            'PE',
            'STDFQ']
     if os.path.isdir(read_group):
-        print "read group " + read_group + " already exists; skipping"        
+        print "read group " + read_group + " already exists; skipping"
     else:
         os.mkdir(read_group)
         os.chdir(read_group)
@@ -48,7 +48,7 @@ for line in sequence_index:
                           thousand_genomes_data + seq_file,
                           thousand_genomes_data + paired_file,
                           isize,
-                          str(float(isize) * .15),
+                          str(int(round(float(isize) * .15))),
                           'Random',
                           library,
                           sample,
