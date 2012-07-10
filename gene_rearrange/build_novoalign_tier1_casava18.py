@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import time
 import glob
+import re
 
 if not len(sys.argv) == 13:
 	print "Usage: build_novoalign_tier1.py working_dir reference read_file_dir read_file1_pre read_file2_pre target_isize isize_sd repeat_report library_name sample_name read_group_name frag_type(MP|PE|MP_NOPE)" 
