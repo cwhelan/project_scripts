@@ -8,22 +8,23 @@ import time
 import re
 from cStringIO import StringIO
 
-if not len(sys.argv) == 13:
-	print "Usage: build_novoalign_tier1.py working_dir reference read_file1 read_file2 target_isize isize_sd repeat_report library_name sample_name read_group_name frag_type(MP|PE|MP_NOPE) qual_format" 
+if not len(sys.argv) == 14:
+	print "Usage: build_novoalign_tier1.py working_dir reference faidx read_file1 read_file2 target_isize isize_sd repeat_report library_name sample_name read_group_name frag_type(MP|PE|MP_NOPE) qual_format" 
 	exit(1)
 
 working_dir = sys.argv[1]
 reference = sys.argv[2]
-read_file1 = sys.argv[3]
-read_file2 = sys.argv[4]
-target_isize = sys.argv[5]
-isize_sd = sys.argv[6]
-repeat_report = sys.argv[7]
-library_name = sys.argv[8]
-sample_name = sys.argv[9]
-read_group_name = sys.argv[10]
-frag_type = sys.argv[11]
-qual_format = sys.argv[12]
+faidx = sys.argv[3]
+read_file1 = sys.argv[4]
+read_file2 = sys.argv[5]
+target_isize = sys.argv[6]
+isize_sd = sys.argv[7]
+repeat_report = sys.argv[8]
+library_name = sys.argv[9]
+sample_name = sys.argv[10]
+read_group_name = sys.argv[11]
+frag_type = sys.argv[12]
+qual_format = sys.argv[13]
 
 if (not frag_type in ['MP', 'PE', 'MP_NOPE']):
 	print "valid frag types are MP, PE, and MP_NOPE"
@@ -199,6 +200,16 @@ dagfile.write("VARS {0} input=\"{1}/{2}\"\n".format(flagstat_job, working_dir, "
 
 jobs = jobs + 1
 
+coverage_job = jobs
+submit_file = "compute_coverage.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}/{2} DIR {1}\n".format(coverage_job, working_dir, submit_file))
+dagfile.write("VARS {0} sort_bam=\"{1}/{2}\"\n".format(coverage_job, working_dir, "novoalign_tier1_sort_clean_mdup.bam"))
+dagfile.write("VARS {0} nsort_bam=\"{1}/{2}\"\n".format(coverage_job, working_dir, "novoalign_tier1_sort_clean_mdup_nsort.bam"))
+dagfile.write("VARS {0} faidx=\"{1}/{2}\"\n".format(coverage_job, working_dir, faidx))
+
+jobs = jobs + 1
+
 calculate_insert_sizes_job = jobs
 if frag_type == "PE":
 	submit_file = "calculate_insert_sizes_pe.desc"
@@ -234,7 +245,8 @@ dagfile.write("PARENT {0} CHILD {1}\n".format(clean_sam_job, mark_dups_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, calculate_insert_sizes_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, extract_discordants_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, cleanup_job))
-dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, compute_flagstat_job))
+dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, flagstat_job))
+dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, coverage_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(merge_calfiles_job, cleanup_job))
 
 
