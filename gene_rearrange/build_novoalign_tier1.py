@@ -191,6 +191,14 @@ dagfile.write("VARS {0} input=\"{1}/{2}\"\n".format(mark_dups_job, working_dir, 
 
 jobs = jobs + 1
 
+flagstat_job = jobs
+submit_file = "compute_flagstat.desc"
+prep_submit_file(submit_file_dir, submit_file, read_group_name)
+dagfile.write("JOB {0} {1}/{2} DIR {1}\n".format(flagstat_job, working_dir, submit_file))
+dagfile.write("VARS {0} input=\"{1}/{2}\"\n".format(flagstat_job, working_dir, "novoalign_tier1_sort_clean_mdup.bam"))
+
+jobs = jobs + 1
+
 calculate_insert_sizes_job = jobs
 if frag_type == "PE":
 	submit_file = "calculate_insert_sizes_pe.desc"
@@ -226,6 +234,7 @@ dagfile.write("PARENT {0} CHILD {1}\n".format(clean_sam_job, mark_dups_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, calculate_insert_sizes_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, extract_discordants_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, cleanup_job))
+dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, compute_flagstat_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(merge_calfiles_job, cleanup_job))
 
 
