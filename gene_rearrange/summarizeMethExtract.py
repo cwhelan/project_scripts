@@ -9,6 +9,8 @@ curr_chrom = "NA"
 curr_loc = "0"
 curr_strand = "NA"
 
+# prints the summary of number of methylated / unmethylated calls for each CpG location based on a sorted Bismark methylation extraction file
+
 for line in sys.stdin.readlines():
     if line.startswith("Bismark"):
         continue
