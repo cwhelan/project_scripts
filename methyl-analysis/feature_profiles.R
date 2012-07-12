@@ -5,7 +5,12 @@ library(rtracklayer)
 library(multicore)
 library(GenomicFeatures)
 
-source('methyl_analysis_functions.R')
+source_local <- function(fname){
+  argv <- commandArgs(trailingOnly = FALSE)
+  base_dir <- dirname(substring(argv[grep("--file=", argv)], 8))
+  source(paste(base_dir, fname, sep="/"))
+}
+source_local('methyl_analysis_functions.R')
 
 debugging <- FALSE
 debug.rows <- 1000000
