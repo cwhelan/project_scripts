@@ -2,6 +2,10 @@
 
 import sys
 
+if (len(sys.argv) != 3):
+    print "Usage: python convertBreakdancerBedToBedpe.py bd_bed_file bed_out_file"
+    exit(1)
+    
 bd_bed_file = open(sys.argv[1])
 bd_out_file = open(sys.argv[2])
 
