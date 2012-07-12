@@ -5,12 +5,7 @@ library(rtracklayer)
 library(multicore)
 library(GenomicFeatures)
 
-source_local <- function(fname){
-  argv <- commandArgs(trailingOnly = FALSE)
-  base_dir <- dirname(substring(argv[grep("--file=", argv)], 8))
-  source(paste(base_dir, fname, sep="/"))
-}
-source_local('methyl_analysis_functions.R')
+source('/u0/dbase/cw/project_scripts/methyl-analysis/methyl_analysis_functions.R')
 
 debugging <- FALSE
 debug.rows <- 1000000
@@ -53,17 +48,20 @@ cpgRanges <- data.frame2GRanges(cpgsWithSufficientCoverage, keepColumns=TRUE, ig
 rm(cpgsWithSufficientCoverage)
 garbage <- gc()
 
-feature.files <- list.files(path=feature.file.directory, pattern="*\.gff")
+feature.files <- list.files(path=feature.file.directory, pattern="*.gff")
 for (feature.file in feature.files) {
   print(paste("processing feature file", feature.file))
   feature.track <- import.gff(paste(feature.file.directory, feature.file, sep=""))
   feature.name <- strsplit(feature.file, ".gff")[[1]]
-  plotBinnedMethRateInWindows(as.vector(seqnames(feature.track)), 
-                              start(feature.track), 
-                              end(ranges(feature.track)), 
-                              ifelse(as.vector(strand(feature.track))=="+",1,-1), 
-                              bins, 
-                              cpgRanges,                            
+  meth.rate.in.bins <- calculateBinnedMethRateInWindows(
+    as.vector(seqnames(feature.track)), 
+    start(feature.track), 
+    end(ranges(feature.track)), 
+    ifelse(as.vector(strand(feature.track))=="+",1,-1), 
+    bins, 
+    cpgRanges
+    )
+  plotBinnedMethRateInWindows(meth.rate.in.bins, bins,
                               feature.name,
                               file=paste(outputDir,sampleName,"_meth_rate_",feature.name,".pdf",sep=""))
 }
