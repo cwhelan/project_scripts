@@ -397,7 +397,7 @@ calculateMethRateInBin <- function(bin, cpgRanges) {
 }
 
 calculateMethRateInBins <- function(bins, cpgRanges) {
-  lapply(bins, function(x) { calculateMethRateInBin(x, cpgRanges)}, mc.cores=4)
+  mclapply(bins, function(x) { calculateMethRateInBin(x, cpgRanges)}, mc.cores=4)
 }
 
 calculateBinnedMethRateInWindows <- function(chromosomes, starts, ends, strands, numBins, cpgs) {
