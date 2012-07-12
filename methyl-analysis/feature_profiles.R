@@ -56,7 +56,7 @@ for (feature.file in feature.files) {
   meth.rate.in.bins <- calculateBinnedMethRateInWindows(
     as.vector(seqnames(feature.track)), 
     start(feature.track), 
-    end(ranges(feature.track)), 
+    end(feature.track), 
     ifelse(as.vector(strand(feature.track))=="+",1,-1), 
     bins, 
     cpgRanges
