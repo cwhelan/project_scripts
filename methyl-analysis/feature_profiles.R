@@ -48,7 +48,7 @@ cpgRanges <- data.frame2GRanges(cpgsWithSufficientCoverage, keepColumns=TRUE, ig
 rm(cpgsWithSufficientCoverage)
 garbage <- gc()
 
-feature.files <- list.files(path=feature.file.directory, pattern="*.gff")
+feature.files <- list.files(path=feature.file.directory, pattern="*.gff$")
 for (feature.file in feature.files) {
   print(paste("processing feature file", feature.file))
   feature.track <- import.gff(paste(feature.file.directory, feature.file, sep=""))
