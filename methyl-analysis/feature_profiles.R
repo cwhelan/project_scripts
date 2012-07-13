@@ -53,6 +53,7 @@ for (feature.file in feature.files) {
   print(paste("processing feature file", feature.file))
   feature.track <- import.gff(paste(feature.file.directory, feature.file, sep=""))
   feature.name <- strsplit(feature.file, ".gff")[[1]]
+  strand(feature.track)[is.NA(strand(feature.track))] <- '+'  
   meth.rate.in.bins <- calculateBinnedMethRateInWindows(
     as.vector(seqnames(feature.track)), 
     start(feature.track), 
