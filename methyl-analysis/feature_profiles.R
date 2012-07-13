@@ -7,7 +7,7 @@ library(GenomicFeatures)
 
 source('/u0/dbase/cw/project_scripts/methyl-analysis/methyl_analysis_functions.R')
 
-options(error=quote(dump.frames("feature-profile.dump", TRUE)))
+options(error=quote(dump.frames("featureprofile.dump", TRUE)))
 
 debugging <- FALSE
 debug.rows <- 1000000
@@ -17,9 +17,9 @@ args <- commandArgs(trailingOnly = TRUE)
 methylationData <- args[1]
 sampleName <- args[2]
 outputDir <- args[3]
-coverageThreshold <- args[4]
+coverageThreshold <- as.numeric(args[4])
 feature.file.directory <- args[5]
-bins <- args[6]
+bins <- as.numeric(args[6])
 
 sink(file=paste(outputDir, "methyl_analysis.log", sep=""))
 
