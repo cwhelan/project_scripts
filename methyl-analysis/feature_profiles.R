@@ -7,6 +7,8 @@ library(GenomicFeatures)
 
 source('/u0/dbase/cw/project_scripts/methyl-analysis/methyl_analysis_functions.R')
 
+options(error=quote(dump.frames("feature-profile.dump", TRUE)))
+
 debugging <- FALSE
 debug.rows <- 1000000
 
