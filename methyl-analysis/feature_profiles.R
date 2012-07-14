@@ -50,10 +50,20 @@ cpgRanges <- data.frame2GRanges(cpgsWithSufficientCoverage, keepColumns=TRUE, ig
 rm(cpgsWithSufficientCoverage)
 garbage <- gc()
 
+output.file <- paste(outputDir,"feature_profile_meth_rates.txt"
 feature.files <- list.files(path=feature.file.directory, pattern="*.gff$")
 for (feature.file in feature.files) {
   print(paste("processing feature file", feature.file))
-  feature.track <- import.gff(paste(feature.file.directory, feature.file, sep=""))
+  feature.track <- tryCatch(
+    import.gff(paste(feature.file.directory, feature.file, sep="")),
+    error = function (e) {
+      print(paste("Error processing ",feature.file," - ",e))
+      e
+    }
+  )
+  if(inherits(feature.track, "error")){
+    next
+  }
   feature.name <- strsplit(feature.file, ".gff")[[1]]
   strand(feature.track)[is.na(strand(feature.track))] <- '+'  
   meth.rate.in.bins <- calculateBinnedMethRateInWindows(
@@ -64,6 +74,7 @@ for (feature.file in feature.files) {
     bins, 
     cpgRanges
     )
+  cat(feature.name, meth.rate.in.bins, file=output.file, append=TRUE, sep="\t")
   plotBinnedMethRateInWindows(meth.rate.in.bins, bins,
                               feature.name,
                               file=paste(outputDir,sampleName,"_meth_rate_",feature.name,".pdf",sep=""))
