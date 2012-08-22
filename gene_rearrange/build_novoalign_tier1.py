@@ -246,6 +246,6 @@ dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, calculate_insert_si
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, extract_discordants_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, flagstat_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, coverage_job))
-dagfile.write("PARENT {0} CHILD {1}\n".format(merge_calfiles_job, cleanup_job))
+dagfile.write("PARENT {0} {1} {2} {3} {4} CHILD {5}\n".format(mark_dups_job, calculate_insert_sizes_job, extract_discordants_job, flagstat_job, coverage_job, cleanup_job))
 
 
