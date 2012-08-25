@@ -148,6 +148,9 @@ def uniqify(bedtool, output_dir, file_name):
     return pybedtools.BedTool(ufile.name)
 
 def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_type, seg_dups, cent_tel):
+    if len(calls) == 0:
+        log.write("Zero calls of type " + sv_type + "\n")
+        return
     track_name = sample_name + "_" + sv_type
     calls.saveas(output_dir + "/" + file_name + '.bedpe')
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '.bedpe', track_name)    
