@@ -2,6 +2,9 @@
 
 import sys
 
+# converts the output of breakdancer (the *.bd_out.txt file and the *.bd.bed file generated with the -r option
+# that has the actual supporting reads for each call) into a bedpe file.
+
 if (len(sys.argv) != 3):
     print "Usage: python convertBreakdancerBedToBedpe.py bd_bed_file bed_out_file"
     exit(1)
