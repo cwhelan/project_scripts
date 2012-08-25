@@ -6,7 +6,7 @@ import pybedtools
 import subprocess
 
 if len(sys.argv) != 9:
-    print "Usage: annotate_hydra_out.py hydra_file te_file common_deletions_file insert_size output_dir seg_dups cent_tel library_name"
+    print "Usage: annotate_hydra_out.py hydra_file te_file common_deletions_file insert_size output_dir seg_dups cent_tel sample_name"
     sys.exit()
 
 log = open(output_dir + "/annotate.log", "w")
@@ -19,7 +19,7 @@ insert_size = int(sys.argv[4])
 output_dir = sys.argv[5]
 seg_dups_file = sys.argv[6]
 cent_tel_file = sys.argv[7]
-library_name = sys.argv[8]
+sample_name = sys.argv[8]
 
 log.write("input file: {0}\n".format(hydra_file))
 log.write("sample name: ".format(sample_name))
