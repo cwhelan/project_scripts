@@ -206,7 +206,7 @@ prep_submit_file(submit_file_dir, submit_file, read_group_name)
 dagfile.write("JOB {0} {1}/{2} DIR {1}\n".format(coverage_job, working_dir, submit_file))
 dagfile.write("VARS {0} sort_bam=\"{1}/{2}\"\n".format(coverage_job, working_dir, "novoalign_tier1_sort_clean_mdup.bam"))
 dagfile.write("VARS {0} nsort_bam=\"{1}/{2}\"\n".format(coverage_job, working_dir, "novoalign_tier1_sort_clean_mdup_nsort.bam"))
-dagfile.write("VARS {0} faidx=\"{1}/{2}\"\n".format(coverage_job, working_dir, faidx))
+dagfile.write("VARS {0} faidx=\"{1}\"\n".format(coverage_job, faidx))
 
 jobs = jobs + 1
 
