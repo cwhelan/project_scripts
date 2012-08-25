@@ -9,7 +9,6 @@ if len(sys.argv) != 9:
     print "Usage: annotate_hydra_out.py hydra_file te_file common_deletions_file insert_size output_dir seg_dups cent_tel sample_name"
     sys.exit()
 
-log = open(output_dir + "/annotate.log", "w")
 
 hydra_file = sys.argv[1]
 print 'analyzing hydra file: ' + hydra_file
@@ -21,6 +20,7 @@ seg_dups_file = sys.argv[6]
 cent_tel_file = sys.argv[7]
 sample_name = sys.argv[8]
 
+log = open(output_dir + "/annotate.log", "w")
 log.write("input file: {0}\n".format(hydra_file))
 log.write("sample name: ".format(sample_name))
 log.write("te file: {0}\n".format(te_file))
@@ -281,3 +281,4 @@ save_output(master_out_bed, unexpected_orientation, output_dir, "inversions", sa
 
 
 pybedtools.cleanup()
+log.close()
