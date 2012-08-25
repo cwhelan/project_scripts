@@ -167,8 +167,14 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_cent_tel.bedpe', track_name + "_IN_CENT_TEL")    
     subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_cent_tel.bedpe.bed', shell=True, stdout=master_out_bed)
 
-    stringent_minus_sd = calls.pair_to_pair(seg_dup_overlap, type="notboth").saveas()
-    stringent_minus_ct = stringent_minus_sd.pair_to_pair(cent_tel_overlap, type="notboth").saveas()
+    if len(seg_dup_overlap) > 0:
+        stringent_minus_sd = calls.pair_to_pair(seg_dup_overlap, type="notboth").saveas()
+    else:
+        stringent_minus_sd = calls
+    if len(cent_tel_overlap) > 0:
+        stringent_minus_ct = stringent_minus_sd.pair_to_pair(cent_tel_overlap, type="notboth").saveas()
+    else:
+        stringent_minus_ct = stringent_minus_sd
     
 #    stringent_minus_ct.saveas(output_dir + "/stringent_minus_ct.bed")
 #    stringent = calls - seg_dup_overlap - cent_tel_overlap
