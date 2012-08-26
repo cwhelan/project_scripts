@@ -178,13 +178,20 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
 
     print sv_type + "\tTOTAL_STRINGENT\t" + str(len(stringent_minus_ct))
     log.write(sv_type + "\tTOTAL_STRINGENT\t" + str(len(stringent_minus_ct)) + "\n")
+
+    if len(stringent_minus_ct) == 0:
+        return
+
 #    print "total stringent: " + str(len(stringent_minus_ct))
     very_short_stringent = stringent_minus_ct.filter(bedpe_lt_length_filter, 1000).saveas()
     very_short_stringent.saveas(output_dir + "/" + file_name + "_dedup_stringent_very_short.bedpe")
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_stringent_very_short.bedpe', track_name + "_STRINGENT_LT_1KB")
     subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_stringent_very_short.bedpe.bed', shell=True, stdout=master_out_bed)
 #    stringent = stringent - very_short_stringent
-    stringent_minus_vs = stringent_minus_ct.pair_to_pair(very_short_stringent, type="notboth").saveas()
+    if len(very_short_stringent) > 0:        
+        stringent_minus_vs = stringent_minus_ct.pair_to_pair(very_short_stringent, type="notboth").saveas()
+    else:
+        stringent_minus_vs = stringent_minus_ct.saveas()
     print sv_type + "\tTOTAL_STRINGENT_MINUS_VERY_SHORT\t" + str(len(stringent_minus_vs))
     log.write(sv_type + "\tTOTAL_STRINGENT_MINUS_VERY_SHORT\t" + str(len(stringent_minus_vs)) + "\n")
     if len(stringent_minus_vs) == 0:
@@ -196,7 +203,10 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_stringent_short.bedpe', track_name + "_STRINGENT_LT_5KB")
     subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_stringent_short.bedpe.bed', shell=True, stdout=master_out_bed)
 #    stringent = stringent - short_stringent
-    stringent_minus_vss = stringent_minus_vs.pair_to_pair(short_stringent, type="notboth").saveas()
+    if len(short_stringent) > 0:
+        stringent_minus_vss = stringent_minus_vs.pair_to_pair(short_stringent, type="notboth").saveas()
+    else:
+        stringent_minus_vss = stringent_minus_vs.saveas()
 
 #    print "smv: " + str(len(stringent_minus_vss))
 
