@@ -65,15 +65,18 @@ def score_lt_filter(feature, score):
 
 def expected_orientation_filter(feature, matches):
     expected = False
-#    print feature
     if (feature[8] == '+' and feature[9] == '-') or (feature[8] == '-' and feature[9] == '+'):
-#        print "found a good feature"
         expected = True
-
     if matches:
         return expected
     else:
         return not expected
+
+def name_not_in_set_filter(feature, name_set):
+    if feature[6] in name_set:
+        return False
+    else:
+        return True
 
 def bedpe_reciprocal_overlap_ends_filter(feature, overlap_pct):
     #print feature
@@ -81,7 +84,6 @@ def bedpe_reciprocal_overlap_ends_filter(feature, overlap_pct):
     te_start = int(feature[23])
     te_end = int(feature[24])
     te_length = te_end - te_start
-#    match = False
     return overlaps_by(te_chr, te_start, te_end, feature[0], int(feature[1]), int(feature[2]), overlap_pct) or overlaps_by(te_chr, te_start, te_end, feature[3], int(feature[4]), int(feature[5]), overlap_pct)
 
 def bedpe_reciprocal_overlap_ispan_filter(feature, overlap_pct):
@@ -113,28 +115,20 @@ def write_bed(call, fh):
     fh.write("\n")
     
 def merge_duplicate_breaks(calls, slop):
-    calls_list = []
-
-    for call in calls:
-        calls_list.append(call)
-    for curr in calls_list:
-        for bpe in calls_list:
-            if curr.fields[6] == bpe.fields[6]:
-                continue
-            #        if bpe.c1 > curr.c1:
-            #            break
-            if curr.fields[0] != bpe.fields[0]:
-                continue
-            if (abs(int(curr.fields[1]) - int(bpe.fields[2])) < slop or abs(int(curr.fields[2]) - int(bpe.fields[1])) < slop):
-                if (curr.fields[3] == bpe.fields[3]) and (abs(int(curr.fields[4]) - int(bpe.fields[5])) < slop or abs(int(curr.fields[5]) - int(bpe.fields[4])) < slop):
-#                    print "removing " + bpe.shortStr() + " as a dupe of " + curr.shortStr()
-                    calls_list.remove(bpe)
-    
-    tmp = open('calls_tmp', 'w')
-    for call in calls_list:
-        write_bed(call, tmp)
-    
-    return pybedtools.BedTool('calls_tmp')
+    dups = calls.pair_to_pair(calls, type="both", rdn=True, slop=slop).saveas()
+    low_scoring_dups = set()
+    for call in dups:
+        n1 = call[6]        
+        n2 = call[28]
+        s1 = int(call[7])
+        s2 = int(call[29])
+        low_score_name = ""
+        if s1 < s2:
+            low_score_name = n1
+        else:
+            low_score_name = n2
+        low_scoring_dups.add(low_score_name)
+    return calls.filter(name_not_in_set_filter, low_scoring_dups).saveas()
 
 
 def convert_bedpe_to_bed12(bedpe_file, track_name):
@@ -154,7 +148,7 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     track_name = sample_name + "_" + sv_type
     calls.saveas(output_dir + "/" + file_name + '.bedpe')
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '.bedpe', track_name)    
-    calls = merge_duplicate_breaks(calls, 5000)
+    calls = merge_duplicate_breaks(calls, 1000)
     print sv_type + "\tNON_DUPLICATE\t" + str(len(calls))
     log.write(sv_type + "\tNON_DUPLICATE\t" + str(len(calls)) + "\n")
 #    print "non-duplicate: " + str(len(calls))
