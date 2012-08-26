@@ -187,6 +187,8 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     stringent_minus_vs = stringent_minus_ct.pair_to_pair(very_short_stringent, type="notboth").saveas()
     print sv_type + "\tTOTAL_STRINGENT_MINUS_VERY_SHORT\t" + str(len(stringent_minus_vs))
     log.write(sv_type + "\tTOTAL_STRINGENT_MINUS_VERY_SHORT\t" + str(len(stringent_minus_vs)) + "\n")
+    if len(stringent_minus_vs) == 0:
+        return
 #    print "total stringent minus vs: " + str(len(stringent_minus_vs))
 
     short_stringent = stringent_minus_vs.filter(bedpe_lt_length_filter, 5000).saveas()
