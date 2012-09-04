@@ -1,5 +1,19 @@
 #!/bin/bash
 
-/g/whelanch/software/bin/bwa aln -t 8 -n 2 /l2/users/whelanch/1000genomes/ref_bwa/human_g1k_v37.fasta $1 > $1.sai
-/g/whelanch/software/bin/bwa aln -t 8 -n 2 /l2/users/whelanch/1000genomes/ref_bwa/human_g1k_v37.fasta $2 > $2.sai
-/g/whelanch/software/bin/bwa sampe /l2/users/whelanch/1000genomes/ref_bwa/human_g1k_v37.fasta $1.sai $2.sai $1 $2 | /g/whelanch/software/bin/samtools view -Sb - > $3
+set -e
+set -u
+
+READ_FILE1=$1
+READ_FILE2=$2
+REFERENCE=$3
+OUTFILE_NAME=$4
+
+READ1_BASE=`basename $READ_FILE1`
+READ2_BASE=`basename $READ_FILE2`
+
+echo /g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE1 > $READ1_BASE.sai
+/g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE1 > $READ1_BASE.sai
+echo /g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE2 > $READ2_BASE.sai
+/g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE2 > $READ2_BASE.sai
+echo /g/whelanch/software/bin/bwa sampe $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_NAME
+/g/whelanch/software/bin/bwa sampe $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_NAME
