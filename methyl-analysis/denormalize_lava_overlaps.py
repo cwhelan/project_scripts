@@ -30,4 +30,4 @@ for line in input_file:
         current_lava_fields = line.rstrip()[1:].split("\t")
         current_lava_line = "\t".join([current_lava_fields[3], current_lava_fields[0], current_lava_fields[1], current_lava_fields[2]])
     else:
-        output_file.write(current_lava_line + "\t" + line.rstrip() + "\n")
+        output_file.write(current_lava_line + "\t" + line.rstrip() + "\t\n")
