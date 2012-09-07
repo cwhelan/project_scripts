@@ -206,7 +206,7 @@ prep_submit_file(submit_file_dir, submit_file, read_group_name)
 dagfile.write("JOB {0} {1}/{2} DIR {1}\n".format(coverage_job, working_dir, submit_file))
 dagfile.write("VARS {0} sort_bam=\"{1}/{2}\"\n".format(coverage_job, working_dir, "novoalign_tier1_sort_clean_mdup.bam"))
 dagfile.write("VARS {0} nsort_bam=\"{1}/{2}\"\n".format(coverage_job, working_dir, "novoalign_tier1_sort_clean_mdup_nsort.bam"))
-dagfile.write("VARS {0} faidx=\"{1}/{2}\"\n".format(coverage_job, working_dir, faidx))
+dagfile.write("VARS {0} faidx=\"{1}\"\n".format(coverage_job, faidx))
 
 jobs = jobs + 1
 
@@ -244,9 +244,8 @@ dagfile.write("PARENT {0} CHILD {1}\n".format(merge_job, clean_sam_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(clean_sam_job, mark_dups_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, calculate_insert_sizes_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, extract_discordants_job))
-dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, cleanup_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, flagstat_job))
 dagfile.write("PARENT {0} CHILD {1}\n".format(mark_dups_job, coverage_job))
-dagfile.write("PARENT {0} CHILD {1}\n".format(merge_calfiles_job, cleanup_job))
+dagfile.write("PARENT {0} {1} {2} {3} {4} CHILD {5}\n".format(mark_dups_job, calculate_insert_sizes_job, extract_discordants_job, flagstat_job, coverage_job, cleanup_job))
 
 
