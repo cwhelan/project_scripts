@@ -72,7 +72,7 @@ test.features.near.lavas <- function (lavas, feature.name, features, cpgRanges, 
   features.notin.lava.regions.rates <- meth.rates(features.notin.lava.regions.cpg)
   
   # print summary stats and plot histograms of the coverage and meth rate
-  print(paste("cpgs in features within", distance, "bp of lavas"))
+  print(paste("cpgs in", feature.name, "within", distance, "bp of lavas"))
   print(paste("Num cpgs:", length(features.in.lava.regions.cpg)))
   print("Coverage:")
   print(summary(features.in.lava.regions.cov))
@@ -80,7 +80,7 @@ test.features.near.lavas <- function (lavas, feature.name, features, cpgRanges, 
   print("Meth Rates:")
   print(summary(features.in.lava.regions.rates))
   
-  print(paste("cpgs in features not within", distance, "bp of lavas"))
+  print(paste("cpgs in", feature.name, "not within", distance, "bp of lavas"))
   print(paste("Num cpgs:", length(features.notin.lava.regions.cpg)))
   print("Coverage:")
   print(summary(features.notin.lava.regions.cov))
@@ -107,9 +107,9 @@ test.nearest.features <- function(lavas, feature.name, features, cpgRanges) {
   other.features.cpg <- cpgRanges[as.matrix(findOverlaps(other.features.minus.lavas, cpgRanges))[,2],]
   other.features.rates <- meth.rates(other.features.cpg)
   
-  print("cpgs in features closest to lavas")
+  print(paste("cpgs in", feature.name, "closest to lavas"))
   print(summary(nearest.features.rates))
-  print("cpgs in features not closest to lavas")
+  print(paste("cpgs in", feature.name, "not closest to lavas"))
   print(summary(other.features.rates))
 
   wt2 <- wilcox.test(nearest.features.rates, other.features.rates)
@@ -176,7 +176,7 @@ summary(lava.gene.nonrepeat.rate)
 print(paste("Non-LAVA gene CpGs:", length(non.lava.gene.cpgs)))
 summary(non.lava.gene.cpg.cov)
 summary(non.lava.gene.cpg.rate)
-wt2 <- wilcox.test(lava.gene.nonrepeat.rates, non.lava.gene.cpg.rate, paired=F, alternative="greater")
+wt2 <- wilcox.test(lava.gene.nonrepeat.rate, non.lava.gene.cpg.rate, paired=F, alternative="greater")
 print(wt2)
 
 # test cpg island methylation rate near lavas vs others
@@ -245,7 +245,7 @@ resized.feature.meth.rate <- function(feature, size, cpgRanges) {
 # windows of those sizes centered on the lavas
 registerDoMC()
 sizes <- seq(1000, 500000, by=1000)
-methrates.by.size <- llply(sizes, resized.feature.meth.rate, feature=lavas, cpgRanges=cpgRanges, .parallel=TRUE, .progress="text")
+methrates.by.size <- llply(sizes, resized.feature.meth.rate, feature=lavas, cpgRanges=cpgRanges, .parallel=TRUE)
 methrate.size.df <- data.frame(cbind(sizes, unlist(methrates.by.size)))
 names(methrate.size.df) <- c("size", "rate")
 p <- ggplot(methrate.size.df, aes(x=size, y=rate)) + geom_line() + opts(title="Methylation rate of regions centered on lavas in genes")
@@ -273,7 +273,7 @@ most.methylated.genes.long <- most.methylated.genes[end(most.methylated.genes) -
 
 # pull the gene info from the lava.data table (currently looking up based on matches in
 # start position, should probably change this
-mm.gene.info <- lava.data[lava.data$Start %in% start(most.methylated.genes.long),c(1,6,7,8,9,13,14)]
+mm.gene.info <- lava.data[lava.data$Start %in% start(most.methylated.genes.long),c(5,10,11,12,13,3,4)]
 
 # plot a gene methylation profile for each gene
 apply(mm.gene.info, 1, function(gene.info) {
