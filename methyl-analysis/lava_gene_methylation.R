@@ -167,7 +167,7 @@ lavas <- unique(with(lava.data, GRanges(seqnames=Scaffold, ranges=IRanges(start=
 # remove the cpgs that are actually in lavas themselves from lava.gene.cpgs
 lava.gene.nonrepeat.cpgs <- lava.gene.cpgs[-1 * as.matrix(findOverlaps(reduce(lavas, ignore.strand=TRUE), lava.gene.cpgs))[,2],]
 lava.gene.nonrepeat.cov <- cpg.coverage(lava.gene.nonrepeat.cpgs)
-lava.gene.nonrepeat.rates <- meth.rates(lava.gene.nonrepeat.cpgs)
+lava.gene.nonrepeat.rate <- meth.rates(lava.gene.nonrepeat.cpgs)
 
 # summarize stats and test methylation rate using mann-whitney U test
 print(paste("LAVA gene CPGs excluding LAVAs:", length(lava.gene.nonrepeat.cpgs)))
