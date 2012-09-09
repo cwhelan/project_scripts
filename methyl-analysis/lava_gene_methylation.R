@@ -367,3 +367,5 @@ p <- ggplot(profiles, aes(x=variable, y=value, group=lava.status)) +
             ylab("Methylation Rate")
 ggsave(p, filename=paste(output.dir, "/", "gene_lava_status_meth_profile.pdf", sep=""))
 elementMetadata(cpgRanges, "score") <- meth.rates(cpgRanges)
+
+sessionInfo()
