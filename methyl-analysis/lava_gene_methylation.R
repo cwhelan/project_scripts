@@ -24,7 +24,7 @@ genes.file <- '/u0/dbase/genomes/gibbon/features/gibbon_genes_ensmbl.gff'
 coverageThreshold <- 6
 bins <- 20
 
-sink(file=paste(output.dir, "methyl_analysis.log", sep=""))
+sink(file=paste(output.dir, "/methyl_analysis.log", sep=""))
 
 # function to calculate the meth rate for a list of cpgs represented by a GRanges
 # object with metadata fields "meth" and "unmeth"
@@ -166,7 +166,7 @@ lavas <- unique(with(lava.data, GRanges(seqnames=Scaffold, ranges=IRanges(start=
 
 # remove the cpgs that are actually in lavas themselves from lava.gene.cpgs
 lava.gene.nonrepeat.cpgs <- lava.gene.cpgs[-1 * as.matrix(findOverlaps(reduce(lavas, ignore.strand=TRUE), lava.gene.cpgs))[,2],]
-xslava.gene.nonrepeat.cov <- cpg.coverage(lava.gene.nonrepeat.cpgs)
+lava.gene.nonrepeat.cov <- cpg.coverage(lava.gene.nonrepeat.cpgs)
 lava.gene.nonrepeat.rates <- meth.rates(lava.gene.nonrepeat.cpgs)
 
 # summarize stats and test methylation rate using mann-whitney U test
