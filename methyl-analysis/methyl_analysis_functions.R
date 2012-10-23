@@ -510,7 +510,7 @@ import.cpg.methylation <- function(methylation.data.file, coverage.threshold, sa
   print(paste("Reading file", methylation.data.file))
   classes <- c("factor","integer","factor","integer","integer")
   
-  methylationSummary <- read.table(methylationData, colClasses=classes, nrows=ifelse(debugging, debug.rows, -1))
+  methylationSummary <- read.table(methylation.data.file, colClasses=classes, nrows=ifelse(debugging, debug.rows, -1))
   print(paste("Number of CpGs Examined:", dim(methylationSummary)[1]))
   names(methylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
   

@@ -17,8 +17,9 @@ debug.rows <- 1000000
 methylationData <- '/u0/dbase/cw/tomas_BS/gibbon/gibbon_methylation_summary.txt.gz'
 lava.data.file <- '/u0/dbase/cw/lava2/lava.ensembl.denorm.txt'
 sampleName <- 'gibbon'
-output.dir <- '/u0/dbase/cw/lava2'
+output.dir <- '/u0/dbase/cw/lava3'
 genes.file <- '/u0/dbase/genomes/gibbon/features/gibbon_genes_ensmbl.gff'
+all.lavas.file <- '/u0/dbase/genomes/gibbon/features/Lavas.final.gff'
 
 # parameters
 coverageThreshold <- 6
@@ -77,6 +78,8 @@ test.features.near.lavas <- function (lavas, feature.name, features, cpgRanges, 
   print("Coverage:")
   print(summary(features.in.lava.regions.cov))
   pdf(paste(output.dir, "/", "cpg_coverage_in_", feature.name, "_within_", distance, "_of_LAVAs.pdf", sep=""))
+  hist(features.in.lava.regions.cov)
+  dev.off()
   print("Meth Rates:")
   print(summary(features.in.lava.regions.rates))
   
@@ -85,6 +88,9 @@ test.features.near.lavas <- function (lavas, feature.name, features, cpgRanges, 
   print("Coverage:")
   print(summary(features.notin.lava.regions.cov))
   pdf(paste(output.dir, "/", "cpg_coverage_in_", feature.name, "_notwithin_", distance, "_of_LAVAs.pdf", sep=""))
+  hist(features.notin.lava.regions.cov)
+  dev.off()
+
   print("Meth Rates:")
   print(summary(features.notin.lava.regions.rates))
 
@@ -244,6 +250,7 @@ resized.feature.meth.rate <- function(feature, size, cpgRanges) {
 # for sizes from 1000 to 500000, calculate and plot the methylation rate of cpgs in
 # windows of those sizes centered on the lavas
 registerDoMC()
+
 sizes <- seq(1000, 500000, by=1000)
 methrates.by.size <- llply(sizes, resized.feature.meth.rate, feature=lavas, cpgRanges=cpgRanges, .parallel=TRUE)
 methrate.size.df <- data.frame(cbind(sizes, unlist(methrates.by.size)))
@@ -257,19 +264,41 @@ mean.cpg.meth.rate.by.index <- function(indices, cpgRanges) {
   mean(meth.rates(cpgs))
 }
 
-# find the mean methylation rate of every gene
-gene.overlaps <- as.matrix(findOverlaps(lava.genes, cpgRanges))
+
+
+# returns the mean meth rate of cpgs in cpgRanges for the given indices
+mean.meth.rate.by.index <- function(indices, meth.rates) {
+  mean(meth.rates[indices])
+}
+
+# find the mean methylation rate of every gibbon gene
+gene.overlaps <- as.matrix(findOverlaps(genes, cpgRanges))
 gene.overlaps.df <- data.frame(gene.overlaps)
+
 gene.cpg.list <- lapply(split(gene.overlaps.df, as.factor(gene.overlaps.df[,1])), function(x) { x[,2]})
-lava.gene.mean.rates <- ldply(gene.cpg.list, mean.cpg.meth.rate.by.index, cpgRanges=cpgRanges, .parallel=TRUE, .progress="text")
+cpg.meth.rates <- meth.rates(cpgRanges)
+
+gene.mean.rates <- ldply(gene.cpg.list, mean.meth.rate.by.index, meth.rates=cpg.meth.rates, .parallel=TRUE, .progress="text")
+names(gene.mean.rates) <- c("id", "rate")
+
+
+# find the mean methylation rate of every lava gene
+lava.gene.overlaps <- as.matrix(findOverlaps(lava.genes, cpgRanges))
+
+lava.gene.overlaps.df <- data.frame(lava.gene.overlaps)
+
+lava.gene.cpg.list <- lapply(split(lava.gene.overlaps.df, as.factor(lava.gene.overlaps.df[,1])), function(x) { x[,2]})
+
+lava.gene.mean.rates <- ldply(lava.gene.cpg.list, mean.cpg.meth.rate.by.index, cpgRanges=cpgRanges, .parallel=TRUE, .progress="text")
 names(lava.gene.mean.rates) <- c("id", "rate")
 
 # sort the genes by methylation rate and choose the most methylated
+
 lava.gene.mean.rates.sorted <- lava.gene.mean.rates[order(lava.gene.mean.rates$rate),]
 most.methylated.genes <- lava.genes[as.numeric(tail(lava.gene.mean.rates.sorted, 100)[,1])]
 
 # exclude those that are smaller than 10kb
-most.methylated.genes.long <- most.methylated.genes[end(most.methylated.genes) - start(most.methylated.genes) > 10000]
+most.methylated.genes.long <- most.methylated.genes[end(most.methylated.genes) - start(most.metHYLATED.genes) > 10000]
 
 # pull the gene info from the lava.data table (currently looking up based on matches in
 # start position, should probably change this
@@ -280,6 +309,22 @@ apply(mm.gene.info, 1, function(gene.info) {
   print(gene.info)
   id <- rownames(gene.info)
   lava <- GRanges(seqnames=gene.info[2],
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                   ranges=IRanges(start=as.numeric(gene.info[6]),
                                    end=as.numeric(gene.info[7])),
                   strand="*")
@@ -368,4 +413,105 @@ p <- ggplot(profiles, aes(x=variable, y=value, group=lava.status)) +
 ggsave(p, filename=paste(output.dir, "/", "gene_lava_status_meth_profile.pdf", sep=""))
 elementMetadata(cpgRanges, "score") <- meth.rates(cpgRanges)
 
+human.gene.data <- read.table('/u0/dbase/cw/human_genes_ensembl2.txt', header=TRUE, sep="\t",
+                              colClasses=c("character", "character", "factor", "numeric", "numeric", "factor"))
+
+gibbon.genes.with.orthologues <-
+  read.table('/u0/dbase/cw/gibbon_nleu10_genes_with_human_orthologues.txt',
+             header=TRUE, sep="\t",
+             colClasses=c("character",
+               "character",
+               "character", "character", "factor", "numeric", "numeric"))
+
+lava.gene.ids <-  unique(elementMetadata(lava.genes)$group)
+
+human.lava.gene.ortho.ids <- unique(gibbon.genes.with.orthologues[gibbon.genes.with.orthologues$Ensembl.Gene.ID %in% lava.gene.ids,3])
+
+human.gene.ortho.ids <- unique(gibbon.genes.with.orthologues[(! gibbon.genes.with.orthologues$Ensembl.Gene.ID %in% lava.gene.ids),3])
+
+human.gene.max.range.data <- ddply(human.gene.data, "Ensembl.Gene.ID", function(df) { data.frame(Chromosome.name=as.character(df[1,"Chromosome.Name"]), Start=min(df$Gene.Start..bp.), End=max(df$Gene.End..bp.), Strand=as.character(df[1,"Strand"]))})
+
+human.gene.max.ranges <- GRanges(seqnames=as.character(human.gene.max.range.data$Chromosome.name),
+                       ranges=IRanges(start=human.gene.max.range.data$Start,
+                                      end=human.gene.max.range.data$End))
+
+elementMetadata(human.gene.max.ranges)[,"ensemble.gene.id"] <- human.gene.max.range.data$Ensembl.Gene.ID
+
+human.lava.gene.orthos <- human.gene.max.ranges[as.character(elementMetadata(human.gene.max.ranges)[,"ensemble.gene.id"]) %in% as.character(human.lava.gene.ortho.ids)]
+
+human.non.lava.gene.orthos <- human.gene.max.ranges[elementMetadata(human.gene.max.ranges)[,"ensemble.gene.id"] %in% human.gene.ortho.ids]
+
+human.cpg.ranges <- import.cpg.methylation('/u0/dbase/cw/tomas_BS/human_methylation_summary.b37.txt.gz', coverageThreshold, 'human', output.dir, debugging, debug.rows)
+
+human.lava.gene.ortho.cpgs <- human.cpg.ranges[as.matrix(findOverlaps(reduce(human.lava.gene.orthos, ignore.strand=TRUE), human.cpg.ranges))[,2],]
+
+human.lava.gene.ortho.cpg.cov <- cpg.coverage(human.lava.gene.ortho.cpgs)
+human.lava.gene.ortho.cpg.rate <- meth.rates(human.lava.gene.ortho.cpgs)
+
+human.non.lava.gene.ortho.cpgs <- human.cpg.ranges[as.matrix(findOverlaps(reduce(human.non.lava.gene.orthos, ignore.strand=TRUE), human.cpg.ranges))[,2],]
+
+human.non.lava.gene.ortho.cpg.cov <- cpg.coverage(human.non.lava.gene.ortho.cpgs)
+human.non.lava.gene.ortho.cpg.rate <- meth.rates(human.non.lava.gene.ortho.cpgs)
+
+# summarize stats and test methylation rate using mann-whitney U test
+print(paste("Human LAVA gene ortholog CpGs:", length(human.lava.gene.ortho.cpgs)))
+summary(human.lava.gene.ortho.cpg.cov)
+summary(human.lava.gene.ortho.cpg.rate)
+print(paste("Human non-LAVA gene ortholog CpGs:", length(human.non.lava.gene.ortho.cpgs)))
+summary(human.non.lava.gene.ortho.cpg.cov)
+summary(human.non.lava.gene.ortho.cpg.rate)
+wt <- wilcox.test(human.lava.gene.ortho.cpg.rate, human.non.lava.gene.ortho.cpg.rate, paired=F, alternative="greater")
+print(wt)
+
+random.rates <- llply(seq(1:100),  function(x) {
+  idcs <- round(runif(5000, 1, length(human.gene.max.ranges)))
+  s1 <- human.gene.max.ranges[idcs]
+  s1.cpg <- human.cpg.ranges[as.matrix(findOverlaps(reduce(s1, ignore.strand=TRUE), human.cpg.ranges))[,2],]
+  s1.rate <- meth.rates(s1.cpg)
+  mean(s1.rate)
+}), .parallel=TRUE)
+
+
+# find the mean methylation rate of every gene
+gene.overlaps <- as.matrix(findOverlaps(human.genes, human.cpg.ranges))
+gene.overlaps.df <- data.frame(gene.overlaps)
+gene.cpg.list <- lapply(split(gene.overlaps.df, as.factor(gene.overlaps.df[,1])), function(x) { x[,2]})
+
+# returns the mean meth rate of cpgs in cpgRanges for the given indices
+mean.meth.rate.by.index <- function(indices, meth.rates) {
+  mean(meth.rates[indices])
+}
+
+human.cpg.meth.rates <- meth.rates(human.cpg.ranges)
+
+human.gene.mean.rates <- ldply(gene.cpg.list, mean.meth.rate.by.index, meth.rates=human.cpg.meth.rates, .parallel=TRUE, .progress="text")
+names(human.gene.mean.rates) <- c("id", "rate")
+
+# test gene lavas vs non-gene lavas
+all.lavas <- import.gff(all.lavas.file, asRangedData=FALSE)
+
+non.gene.lavas <- all.lavas[! as.character(elementMetadata(all.lavas)[,"type"]) %in% as.character(lava.data$Repeat_ID)]
+
+cpgs.in.gene.lavas <- cpgRanges[as.matrix(findOverlaps(reduce(lavas, ignore.strand=TRUE), cpgRanges))[,2],]
+cpgs.in.non.gene.lavas <- cpgRanges[as.matrix(findOverlaps(reduce(non.gene.lavas, ignore.strand=TRUE), cpgRanges))[,2],]
+
+cpgs.in.gene.lavas.cov <- cpg.coverage(cpgs.in.gene.lavas)
+cpgs.in.gene.lavas.rate <- meth.rates(cpgs.in.gene.lavas)
+
+cpgs.in.non.gene.lavas.cov <- cpg.coverage(cpgs.in.non.gene.lavas)
+cpgs.in.non.gene.lavas.rate <- meth.rates(cpgs.in.non.gene.lavas)
+
+print(length(cpgs.in.gene.lavas))
+summary(cpgs.in.gene.lavas.cov)
+summary(cpgs.in.gene.lavas.rate)
+
+print(length(cpgs.in.non.gene.lavas))
+summary(cpgs.in.non.gene.lavas.cov)
+summary(cpgs.in.non.gene.lavas.rate)
+
+print(wilcox.test(cpgs.in.gene.lavas.rate, cpgs.in.non.gene.lavas.rate, paired=FALSE, alternative="greater"))
+
+
+
 sessionInfo()
+
