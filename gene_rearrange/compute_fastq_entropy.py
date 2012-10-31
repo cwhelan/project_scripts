@@ -8,9 +8,7 @@ def increment(map, key):
         map[key] = 1
 
 def entropy(counts):
-    print(counts)
     normalized_counts = map(lambda x: float(x)/sum(counts.values()), counts.values())
-    print(normalized_counts)
     entropy = -1 * sum(map(lambda x: x * log(x), normalized_counts))
     return entropy
 
