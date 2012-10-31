@@ -381,10 +381,14 @@ makeBinsAroundPositions <- function(chromosomes, starts, ends, strands, numBins)
   lapply(1:numBins, function(x) { makeBin(x, chromosomes, starts, ends, strands, numBins) })
 }
 
+is.negative.strand <- function(strands) {
+  as.vector(strands) == -1 | as.vector(strands) == "-1"
+}
+
 makeBin <- function(binNum, chromosomes, starts, ends, strands, numBins) {
   binSize <- (ends - starts) / numBins
-  binStarts <- starts + ifelse(strands == -1, numBins - binNum, binNum - 1) * binSize
-  binEnds <- starts + (ifelse(strands == -1, numBins - binNum, binNum - 1) + 1) * binSize - 1
+  binStarts <- starts + ifelse(is.negative.strand(strands), numBins - binNum, binNum - 1) * binSize
+  binEnds <- starts + (ifelse(is.negative.strand(strands), numBins - binNum, binNum - 1) + 1) * binSize - 1
   GRanges(seqnames=chromosomes, ranges=IRanges(start=binStarts, end=binEnds))
 }
 
@@ -397,7 +401,7 @@ calculateMethRateInBin <- function(bin, cpgRanges) {
 }
 
 calculateMethRateInBins <- function(bins, cpgRanges) {
-  mclapply(bins, function(x) { calculateMethRateInBin(x, cpgRanges)}, mc.cores=4)
+  mclapply(bins, function(x) { calculateMethRateInBin(x, cpgRanges)}, mc.cores=6)
 }
 
 calculateBinnedMethRateInWindows <- function(chromosomes, starts, ends, strands, numBins, cpgs) {
@@ -459,6 +463,39 @@ plotGeneMethylation <- function(geneName, txdb, cpgRanges, otherRanges=NULL, oth
   axis(3, c(geneTss, geneTes), c(rep("TSS", length(geneTss)), rep("TES", length(geneTes))), las=2)  
 }
 
+plotGeneMethylationByCoords <- function(geneName, gseqname, gstart, gend, gstrand, cpgRanges, otherRanges=NULL, otherColors=NULL, gene.margin=20000) {    
+  par(oma=c(0,0,1,0))
+  geneLength <- gend - gstart
+  geneMargin <- gene.margin
+  geneRegionGR <- GRanges(seqnames=gseqname, ranges=IRanges(start=gstart - geneMargin, end=gend + geneMargin), strand="*")
+  print(geneRegionGR)
+  geneRegionCpgOverlaps <- as.matrix(findOverlaps(geneRegionGR, cpgRanges))
+  geneRegionMethRate <- cpgGRangeMethylationPct(cpgRanges[geneRegionCpgOverlaps[,2]])
+  geneRegionCpgCoords <- start(cpgRanges[geneRegionCpgOverlaps[,2]])
+  geneRegionFit <- locfit(geneRegionMethRate~lp(geneRegionCpgCoords, nn=0.2, h=0.6))
+  smoothScatter(geneRegionCpgCoords, geneRegionMethRate, pch='.', transformation = function(x) x^.5, ylim=c(0,1), yaxs = 'i', nrpoints=0, ann=FALSE)
+  title(ylab="Methylation Rate", xlab=paste("Coordinate on", gseqname))
+  title(main=geneName, outer=TRUE)
+  plot(geneRegionFit, add=TRUE)
+  geneTss <- ifelse(gstrand == "+", gstart, gend)
+  geneTss <- geneTss[!duplicated(geneTss)]
+  abline(v=geneTss, lty=2)
+#  geneExons <- reduce(exons(hg19UCSCGenes, vals=list(tx_name=geneTxs$TXNAME)))
+#  rect(start(geneExons), 0, end(geneExons), 1, density=NA, col="#44000022")
+  geneTes <- ifelse(gstrand == "+", gend, gstart)
+  abline(v=geneTes, lty=4)
+  if (! is.null(otherRanges)) {
+    mapply(function(gr, c) {
+      print(gr)
+      otherIntersections <- reduce(gr[as.matrix(findOverlaps(geneRegionGR, gr))[,2]])
+      rect(start(otherIntersections), 0, end(otherIntersections), 1, density=NA, col=c, border=NA, lty=0)
+      abline(v=start(otherIntersections))
+      abline(v=end(otherIntersections))
+    }, otherRanges, otherColors)
+  }
+  axis(3, c(geneTss, geneTes), c(rep("TSS", length(geneTss)), rep("TES", length(geneTes))), las=2)  
+}
+
 plotMultipleBinnedMethRateInWindows <- function(methRateInBins, names, numBins, main, at=c(1,numBins), labels=c("5'","3'"), file=NULL) {
   if(!is.null(file)) pdf(file)
   colors <- rainbow(length(names))
@@ -467,4 +504,30 @@ plotMultipleBinnedMethRateInWindows <- function(methRateInBins, names, numBins, 
   legend("bottomright", legend=names, col=colors, lty=1)
   axis(1, at=at, labels=labels)
   if(!is.null(file)) dev.off()    
+}
+
+import.cpg.methylation <- function(methylation.data.file, coverage.threshold, sample.name, output.dir, debugging=FALSE, debug.rows=NA) {
+  print(paste("Reading file", methylation.data.file))
+  classes <- c("factor","integer","factor","integer","integer")
+  
+  methylationSummary <- read.table(methylation.data.file, colClasses=classes, nrows=ifelse(debugging, debug.rows, -1))
+  print(paste("Number of CpGs Examined:", dim(methylationSummary)[1]))
+  names(methylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
+  
+  cpgsWithSufficientCoverage <- subset(methylationSummary, meth + unmeth >= coverage.threshold)
+  rm(methylationSummary)
+  garbage <- gc()
+  
+  print(paste("Number of CpGs With Sufficient Coverage:", dim(cpgsWithSufficientCoverage)[1]))
+
+  cpgsWithSufficientCoverage$end <- cpgsWithSufficientCoverage$start
+  rownames(cpgsWithSufficientCoverage) <- 1:(length(cpgsWithSufficientCoverage[,1]))  
+  summarizePctMethylation(sample.name, cpgsWithSufficientCoverage, output.dir)
+
+  print("Converting methylation calls to Genomic Ranges")
+  cpgRanges <- data.frame2GRanges(cpgsWithSufficientCoverage, keepColumns=TRUE, ignoreStrand=TRUE)
+  rm(cpgsWithSufficientCoverage)
+  garbage <- gc()
+  return(cpgRanges)
+
 }

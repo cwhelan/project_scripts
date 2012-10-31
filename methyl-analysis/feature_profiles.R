@@ -27,30 +27,31 @@ if(debugging) {
   print(paste("DEBUGGING IS ON! Will process only", debug.rows, "rows"))
 }
 
-print(paste("Reading file", methylationData))
-classes <- c("factor","integer","factor","integer","integer")
+## print(paste("Reading file", methylationData))
+## classes <- c("factor","integer","factor","integer","integer")
 
-methylationSummary <- read.table(methylationData, colClasses=classes, nrows=ifelse(debugging, debug.rows, -1))
-print(paste("Number of CpGs Examined:", dim(methylationSummary)[1]))
-names(methylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
+## methylationSummary <- read.table(methylationData, colClasses=classes, nrows=ifelse(debugging, debug.rows, -1))
+## print(paste("Number of CpGs Examined:", dim(methylationSummary)[1]))
+## names(methylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
 
-cpgsWithSufficientCoverage <- subset(methylationSummary, meth + unmeth >= coverageThreshold)
-rm(methylationSummary)
-garbage <- gc()
+## cpgsWithSufficientCoverage <- subset(methylationSummary, meth + unmeth >= coverageThreshold)
+## rm(methylationSummary)
+## garbage <- gc()
 
-print(paste("Number of CpGs With Sufficient Coverage:", dim(cpgsWithSufficientCoverage)[1]))
+## print(paste("Number of CpGs With Sufficient Coverage:", dim(cpgsWithSufficientCoverage)[1]))
 
-cpgsWithSufficientCoverage$end <- cpgsWithSufficientCoverage$start
-rownames(cpgsWithSufficientCoverage) <- 1:(length(cpgsWithSufficientCoverage[,1]))
+## cpgsWithSufficientCoverage$end <- cpgsWithSufficientCoverage$start
+## rownames(cpgsWithSufficientCoverage) <- 1:(length(cpgsWithSufficientCoverage[,1]))
 
-summarizePctMethylation(sampleName, cpgsWithSufficientCoverage, outputDir)
+## summarizePctMethylation(sampleName, cpgsWithSufficientCoverage, outputDir)
 
-print("Converting methylation calls to Genomic Ranges")
-cpgRanges <- data.frame2GRanges(cpgsWithSufficientCoverage, keepColumns=TRUE, ignoreStrand=TRUE)
-rm(cpgsWithSufficientCoverage)
-garbage <- gc()
+## print("Converting methylation calls to Genomic Ranges")
+## cpgRanges <- data.frame2GRanges(cpgsWithSufficientCoverage, keepColumns=TRUE, ignoreStrand=TRUE)
+## rm(cpgsWithSufficientCoverage)
+## garbage <- gc()
+cpgRanges <- import.cpg.methylation(methylationData, coverageThreshold, sampleName, outputDir, debugging, debug.rows)
 
-output.file <- paste(outputDir,"feature_profile_meth_rates.txt"
+output.file <- paste(outputDir,"feature_profile_meth_rates.txt", sep="")
 feature.files <- list.files(path=feature.file.directory, pattern="*.gff$")
 for (feature.file in feature.files) {
   print(paste("processing feature file", feature.file))
@@ -64,7 +65,8 @@ for (feature.file in feature.files) {
   if(inherits(feature.track, "error")){
     next
   }
-  feature.name <- strsplit(feature.file, ".gff")[[1]]
+  # removing the ".gff" from the end of the filename
+  feature.name <- substr(feature.file, 1, nchar(feature.file)-4)
   strand(feature.track)[is.na(strand(feature.track))] <- '+'  
   meth.rate.in.bins <- calculateBinnedMethRateInWindows(
     as.vector(seqnames(feature.track)), 
@@ -74,7 +76,7 @@ for (feature.file in feature.files) {
     bins, 
     cpgRanges
     )
-  cat(feature.name, meth.rate.in.bins, file=output.file, append=TRUE, sep="\t")
+  cat(feature.name, as.character(meth.rate.in.bins), "\n", file=output.file, append=TRUE, sep="\t")
   plotBinnedMethRateInWindows(meth.rate.in.bins, bins,
                               feature.name,
                               file=paste(outputDir,sampleName,"_meth_rate_",feature.name,".pdf",sep=""))
