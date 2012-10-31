@@ -30,7 +30,6 @@ while True:
             increment(bi_counts, seq[i-1:i+1])
         if i > 1:
             increment(tri_counts, seq[i-2:i+1])
-
-print "\t".join(map(str, [entropy(uni_counts), entropy(bi_counts), entropy(tri_counts)]))
+    print "\t".join(map(str, [entropy(uni_counts), entropy(bi_counts), entropy(tri_counts)]))
     
         
