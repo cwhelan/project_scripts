@@ -14,12 +14,14 @@ SAMPLE=$7
 READ1_BASE=`basename $READ_FILE1`
 READ2_BASE=`basename $READ_FILE2`
 
-echo /g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE1 > $READ1_BASE.sai
+echo "/g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE1 > $READ1_BASE.sai"
 /g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE1 > $READ1_BASE.sai
-echo /g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE2 > $READ2_BASE.sai
+echo "/g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE2 > $READ2_BASE.sai"
 /g/whelanch/software/bin/bwa aln -t 8 $REFERENCE $READ_FILE2 > $READ2_BASE.sai
-echo /g/whelanch/software/bin/bwa sampe -r "'"@RG\tID:${RGID}\tLB:${LIBRARY}\tSM:${SAMPLE}"'" $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_PREFIX.bam
-/g/whelanch/software/bin/bwa sampe -r "'"@RG\tID:${RGID}\tLB:${LIBRARY}\tSM:${SAMPLE}"'" $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_PREFIX.bam
+
+
+echo "/g/whelanch/software/bin/bwa sampe -r ""'"@RG\tID:${RGID}\tLB:${LIBRARY}\tSM:${SAMPLE}"'"" $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_PREFIX.bam"
+/g/whelanch/software/bin/bwa sampe -r ""'"@RG\tID:${RGID}\tLB:${LIBRARY}\tSM:${SAMPLE}"'"" $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_PREFIX.bam
 
 echo samtools sort -m10000000000 $OUTFILE_PREFIX.bam ${OUTFILE_PREFIX}_sort
 samtools sort -m10000000000 $OUTFILE_PREFIX.bam ${OUTFILE_PREFIX}_sort
