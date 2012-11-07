@@ -6,8 +6,13 @@ library(multicore)
 library(locfit)
 library(GenomicFeatures)
 library(org.Hs.eg.db)
+library(plyr)
+library(doMC)
 
-source('methyl_analysis_functions.R')
+registerDoMC(4)
+
+source('/u0/dbase/cw/project_scripts/methyl-analysis/methyl_analysis_functions.R')
+
 source('SLIMcodes.R')
 
 debugging <- FALSE
@@ -16,15 +21,21 @@ debugNwindows <- 100000
 
 args <- commandArgs(trailingOnly = TRUE)
 
-normalSampleFile <- args[1]
-normalSampleName <- args[2]
-cancerSampleFile <- args[3]
-cancerSampleName <- args[4]
-outputDir <- args[5]
+## normalSampleFile <- args[1]
+## normalSampleName <- args[2]
+## cancerSampleFile <- args[3]
+## cancerSampleName <- args[4]
+## outputDir <- args[5]
+
+normalSampleFile <- '/u0/dbase/cw/bs/DNA110712LC/LC_39/LC_39_and_61_CpG_context_bismark_pe_dedup_sort.txt.gz'
+normalSampleName <- 'LC_3961'
+cancerSampleFile <- '/u0/dbase/cw/bs/LC_41/de-dup/cpg/LC_41_CpG_dedup_methylation_summary.txt.gz'
+cancerSampleName <- 'LC_41'
+outputDir <- '/u0/dbase/cw/bs//LC_41/gene_analysis'
 
 sink(file=paste(outputDir, "methyl_analysis.log", sep=""))
 
-coverageThreshold <- args[6]
+coverageThreshold <- 6
 methCallPct <- .75
 unmethCallPct <- .25
 windowSize <- 2000
@@ -92,20 +103,20 @@ print(paste("Number of CpGs Examined:", dim(cancerMethylationSummary)[1]))
 names(cancerMethylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
 
 cancerCpgsWithSufficientCoverage <- subset(cancerMethylationSummary, meth + unmeth >= coverageThreshold)
-rm(cancerMethylationSummary)
-garbage <- gc()
-
 calls <- as.vector(cpgMethylation(cancerCpgsWithSufficientCoverage, unmethCallPct, methCallPct))
 #cancerCpgsWithSufficientCoverage$calls <- cpgMethylation(cancerCpgsWithSufficientCoverage, unmethCallPct, methCallPct)
 print(paste("Number of CpGs With Sufficient Coverage:", dim(cancerCpgsWithSufficientCoverage)[1]))
-
 cancerCpgsWithSufficientCoverage$end <- cancerCpgsWithSufficientCoverage$start
 rownames(cancerCpgsWithSufficientCoverage) <- 1:(length(cancerCpgsWithSufficientCoverage[,1]))
+
+rm(cancerMethylationSummary)
+garbage <- gc()
 
 summarizePctMethylation(cancerSampleName, cancerCpgsWithSufficientCoverage, outputDir)
 
 print("Converting methylation calls to Genomic Ranges")
 cancerCpgRanges <- data.frame2GRanges(cancerCpgsWithSufficientCoverage, keepColumns=TRUE, ignoreStrand=TRUE)
+
 rm(cancerCpgsWithSufficientCoverage)
 garbage <- gc()
 
@@ -177,7 +188,7 @@ cpgPq <- cbind(sortedCpgPvals, cpgQvals)
 dmCancerCpgs <- cancerCpgRanges[calledInBoth[which(cpgPvals <= max(cpgPq[cpgQvals <= cpgFdr,1])),2]]
 dmNormalCpgs <- normalCpgRanges[calledInBoth[which(cpgPvals <= max(cpgPq[cpgQvals <= cpgFdr,1])),1]]
 
-dmRateDiffs <- elementMetadata(dmCancerCpgs)[,"meth"] / (elementMetadata(dmCancerCpgs)[,"meth"] + elementMetadata(dmCancerCpgs)[,"unmeth"]) -
+dmRateDiffs <- elementMetadata(dmCancerCpgs)[,"meth"] / (elementMetadata(dmCancerCpgs)[,"meth"] + elementMetadata(dmCancerCpgs)[,"unmeth"])
   elementMetadata(dmNormalCpgs)[,"meth"] / (elementMetadata(dmNormalCpgs)[,"meth"] + elementMetadata(dmNormalCpgs)[,"unmeth"])  
 
 hypomethylatedDmCpgs <- dmNormalCpgs[which(dmRateDiffs < 0)]
@@ -229,13 +240,15 @@ print(paste("found", length(dmrs), "DMRs"))
 
 exportDmrs(dmrs, dmrWindowIndices, outputDir, normalSampleName, cancerSampleName, normalSharedCallSets, cancerSharedCallSets, name="shared_cpg_dmrs")
 
-#hg19UCSCGenes <- makeTranscriptDbFromUCSC(genome = "hg19", tablename = "knownGene")
-hg19UCSCGenes <- loadFeatures("~/hg19UCSCGenes.sqlite")
+hg19UCSCGenes <- makeTranscriptDbFromUCSC(genome = "hg19", tablename = "knownGene")w
+
+#saveFeatures(hg19UCSCGenes, '/u0/dbase/cw/hg19UCSCGenes.sqlite')
+#hg19UCSCGenes <- loadFeatures("~/hg19UCSCGenes.sqlite")'
 
 genes=as.data.frame(transcripts(hg19UCSCGenes))
 colnames(genes)[1:3]=c("chrom","txStart","txEnd")
-
-randomHapGenes <- c(grep("random", genes$chrom),grep("hap", genes$chrom))
+  
+randomHapGenes <- c(grep("random", genes$chrom),grep("hap", genes$chrom),grep("un", genes$chrom))
 genes <- genes[-randomHapGenes,]
 
 genes <- genes[!duplicated(genes[,1:5]),]
@@ -396,6 +409,56 @@ repeatMaskerGR <- data.frame2GRanges(repeatmaskerFamilies)
 plotGeneMethylation("DLEC1", hg19UCSCGenes, cancerCpgRanges, 
                     otherRanges=list(svs=testRanges), 
                     otherColors=list(svs="#00440022"))
+
+## reload the cpg ranges but use b37 chromosome names ... sigh
+
+cancerMethylationSummary <- read.table(cancerSampleFile, colClasses=classes, nrows=ifelse(debugging, debugNrows, -1))
+print(paste("Number of CpGs Examined:", dim(cancerMethylationSummary)[1]))
+names(cancerMethylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
+
+cancerMethylationSummary$chr <- substr(as.character(cancerMethylationSummary$chr),
+                                       4, nchar(as.character(cancerMethylationSummary$chr)))
+
+cancerCpgsWithSufficientCoverage <- subset(cancerMethylationSummary, meth + unmeth >= coverageThreshold)
+calls <- as.vector(cpgMethylation(cancerCpgsWithSufficientCoverage, unmethCallPct, methCallPct))
+#cancerCpgsWithSufficientCoverage$calls <- cpgMethylation(cancerCpgsWithSufficientCoverage, unmethCallPct, methCallPct)
+print(paste("Number of CpGs With Sufficient Coverage:", dim(cancerCpgsWithSufficientCoverage)[1]))
+
+cancerCpgsWithSufficientCoverage$end <- cancerCpgsWithSufficientCoverage$start
+rownames(cancerCpgsWithSufficientCoverage) <- 1:(length(cancerCpgsWithSufficientCoverage[,1]))
+
+print("Converting methylation calls to Genomic Ranges")
+cancerCpgRanges <- data.frame2GRanges(cancerCpgsWithSufficientCoverage, keepColumns=TRUE, ignoreStrand=TRUE)
+
+human.gene.data <- read.table('/u0/dbase/cw/human_genes_ensembl2.txt', header=TRUE, sep="\t",
+                              colClasses=c("character", "character", "factor", "numeric", "numeric", "factor"))
+
+human.gene.max.range.data <- ddply(human.gene.data, "Ensembl.Gene.ID", function(df) { data.frame(Chromosome.name=as.character(df[1,"Chromosome.Name"]), Start=min(df$Gene.Start..bp.), End=max(df$Gene.End..bp.), Strand=as.character(df[1,"Strand"]))})
+
+human.gene.max.ranges <- GRanges(seqnames=as.character(human.gene.max.range.data$Chromosome.name),
+                       ranges=IRanges(start=human.gene.max.range.data$Start,
+                                      end=human.gene.max.range.data$End),
+                       strand=ifelse(human.gene.max.range.data$Strand == 1, '+', '-'))
+
+# find the mean methylation rate of every gene
+gene.overlaps <- as.matrix(findOverlaps(human.gene.max.ranges, cancerCpgRanges))
+gene.overlaps.df <- data.frame(gene.overlaps)
+gene.cpg.list <- lapply(split(gene.overlaps.df, as.factor(gene.overlaps.df[,1])), function(x) { x[,2]})
+
+# returns the mean meth rate of cpgs in cpgRanges for the given indices
+mean.meth.rate.by.index <- function(indices, meth.rates) {
+  data.frame(num=length(indices), rate=mean(meth.rates[indices]))
+}
+
+cancer.cpg.meth.rates <- meth.rates(cancerCpgRanges)
+
+cancer.gene.mean.rates <- ldply(gene.cpg.list, mean.meth.rate.by.index, meth.rates=cancer.cpg.meth.rates, .parallel=TRUE, .progress="text")
+
+names(cancer.gene.mean.rates) <- c("id", "num", "rate")
+
+hyper1k <- head(cancer.gene.mean.rates[order(-cancer.gene.mean.rates[,2]),], 1000)
+
+hyper1kIDs <- head(human.gene.max.range.data[order(-cancer.gene.mean.rates[,2]),'Ensembl.Gene.ID'], 1)
 
 citation()
 citation("GenomicRanges")
