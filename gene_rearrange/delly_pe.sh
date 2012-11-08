@@ -22,4 +22,4 @@ FILE_PREFIX=`echo $FILE_NAME | awk -F. '{ print $1 }'`
 
 PE_OUTFILE=${FILE_PREFIX}.delly_pe_q${MAPQ}_c$MAD_CUTOFF}_del.txt
 
-delly -p -g $REF -q $MAPQ -c $MAD_CUTOFF $BAM_FILE -o $PE_OUTFILE
+delly -g $REF -q $MAPQ -c $MAD_CUTOFF -o $PE_OUTFILE $BAM_FILE
