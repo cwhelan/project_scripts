@@ -309,22 +309,6 @@ apply(mm.gene.info, 1, function(gene.info) {
   print(gene.info)
   id <- rownames(gene.info)
   lava <- GRanges(seqnames=gene.info[2],
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                   ranges=IRanges(start=as.numeric(gene.info[6]),
                                    end=as.numeric(gene.info[7])),
                   strand="*")

@@ -2,6 +2,22 @@ require(GenomicRanges)
 require(multicore)
 require(locfit)
 
+# function to calculate the meth rate for a list of cpgs represented by a GRanges
+# object with metadata fields "meth" and "unmeth"
+meth.rates <- function(cpgRanges) {
+  cpg.meth <- elementMetadata(cpgRanges)[, "meth"]
+  cpg.unmeth <- elementMetadata(cpgRanges)[, "unmeth"]
+  rates <- cpg.meth / (cpg.meth + cpg.unmeth)
+}
+
+# function to calculate the coverage for a list of cpgs represented by a GRanges
+# object with metadata fields "meth" and "unmeth"
+cpg.coverage <- function(cpgRanges) {
+  cpg.meth <- elementMetadata(cpgRanges)[, "meth"]
+  cpg.unmeth <- elementMetadata(cpgRanges)[, "unmeth"]
+  coverage <- cpg.meth + cpg.unmeth
+}
+
 # This function by Kasper Daniel Hansen found in the bioconductor list archive here: https://stat.ethz.ch/pipermail/bioconductor/2011-November/042333.html
 data.frame2GRanges <- function(df, keepColumns = FALSE, ignoreStrand = FALSE) {
   stopifnot(class(df) == "data.frame")
