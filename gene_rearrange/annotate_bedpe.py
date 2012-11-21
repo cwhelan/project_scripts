@@ -35,19 +35,32 @@ import sys
 import os
 import pybedtools
 import subprocess
+import argparse
 
 if len(sys.argv) != 9:
-    print "Usage: annotate_bedpe_out.py bedpe_file te_file common_deletions_file insert_size output_dir seg_dups cent_tel sample_name"
+    print "Usage: annotate_bedpe.py bedpe_file te_file common_deletions_file insert_size output_dir seg_dups cent_tel sample_name"
     sys.exit()
 
-bedpe_file = sys.argv[1]
-te_file = sys.argv[2]
-common_deletions_file = sys.argv[3]
-insert_size = int(sys.argv[4])
-output_dir = sys.argv[5]
-seg_dups_file = sys.argv[6]
-cent_tel_file = sys.argv[7]
-sample_name = sys.argv[8]
+parser = argparse.ArgumentParser()
+parser.add_argument("bedpe_file", help="BEDPE file of sv call anchoring regions")
+parser.add_argument("te_file", help="BED file of transposable element annotations")
+parser.add_argument("common_deletions_file", help="BED file of common deletions")
+parser.add_argument("insert_size", type=int, help="Insert size of the library")
+parser.add_argument("output_dir", help="directory into which to put annotations")
+parser.add_argument("seg_dups_file", help="BED file of segmental duplications")
+parser.add_argument("cent_tel_file", help="BED file of centromeric/telomeric regions")
+parser.add_argument("sample_name", help="name of the sample being analyzed")
+
+args = parser.parse_args()
+
+bedpe_file = args.bedpe_file
+te_file = args.te_file
+common_deletions_file = args.common_deletions_file
+insert_size = args.insert_size
+output_dir = args.output_dir
+seg_dups_file = args.seg_dups_file
+cent_tel_file = args.cent_tel_file
+sample_name = args.sample_name
 
 print 'analyzing bedpe file: ' + bedpe_file
 
