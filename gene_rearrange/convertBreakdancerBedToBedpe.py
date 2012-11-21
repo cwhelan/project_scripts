@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 
 import sys
+import argparse
 
 # converts the output of breakdancer (the *.bd_out.txt file and the *.bd.bed file generated with the -r option
 # that has the actual supporting reads for each call) into a bedpe file.
 
-if (len(sys.argv) != 3):
-    print "Usage: python convertBreakdancerBedToBedpe.py bd_bed_file bed_out_file"
-    exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("bd_bed_file", help="Breakdancer bed file of supporting reads")
+parser.add_argument("bd_out_file", help="Breakdancer output file")
+
+args = parser.parse_args()
     
-bd_bed_file = open(sys.argv[1])
-bd_out_file = open(sys.argv[2])
+bd_bed_file = open(args.bd_bed_file, 'r')
+bd_out_file = open(args.bd_out_file, 'r')
 
 name = ''
 c1 = ''
