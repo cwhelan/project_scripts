@@ -21,7 +21,7 @@ WORKING_DIR=`dirname $BAM_FILE`
 FILE_NAME=`basename $BAM_FILE`
 FILE_PREFIX=`echo $FILE_NAME | awk -F. '{ print $1 }'`
 
-PE_OUTFILE=${FILE_PREFIX}.delly_q${MAPQ}_c$MAD_CUTOFF}_del.txt
-SR_OUTFILE=${FILE_PREFIX}.delly_q${MAPQ}_c$MAD_CUTOFF}_br.txt
+PE_OUTFILE=${FILE_PREFIX}.delly_q${MAPQ}_c${MAD_CUTOFF}_del.txt
+SR_OUTFILE=${FILE_PREFIX}.delly_q${MAPQ}_c${MAD_CUTOFF}_br.txt
 
 delly -p -g $REF -q $MAPQ -s $MAD_CUTOFF $BAM_FILE -o $PE_OUTFILE -b $SR_OUTFILE
