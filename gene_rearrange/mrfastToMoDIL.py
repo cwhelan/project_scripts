@@ -16,7 +16,7 @@ for line in sys.stdin:
     readid = fields[0]
     flag = int(fields[1])
     #only process first segments in template
-    pos = int(fields[4])
+    pos = int(fields[3])
     mpos = int(fields[7])
     if (mpos < pos):
         continue
