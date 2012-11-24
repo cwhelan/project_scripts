@@ -22,7 +22,7 @@ for line in sys.stdin:
         continue
     tlen = int(fields[8])
     sequence = fields[9]
-    slen = length(sequence)
+    slen = len(sequence)
     endpos = pos + slen
     
     print "\t".join(map(str, [endpos, mpos, readid, library_isize - tlen, library_isize, readid]))
