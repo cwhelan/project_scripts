@@ -25,7 +25,7 @@ parser.add_argument("input_file", help="Input file")
 parser.add_argument("output_file", help="Output file")
 args = parser.parse_args()
 
-input_file = open(args.input_file, 'w')
+input_file = open(args.input_file, 'r')
 output_file = open(args.output_file, 'w')
 
 output_file.write("Repeat_ID\tRepeat_Scaffold\tRepeat_Start\tRepeat_Stop\tGene_Name\tGene_Type\tTranscript_ID\tGene_ID\tProtiein_ID\tScaffold\tStart\tStop\tStrand\tGene_Location\tCDS\n")
