@@ -18,9 +18,15 @@
 #Repeat_ID	Repeat_Scaffold	Repeat_Start	Repeat_Stop Gene_Name	Gene_Type	Transcript_ID	Gene_ID	Protiein_ID	Scaffold	Start	Stop	Strand	Gene_Location	CDS
 
 import sys
+import argparse
 
-input_file = open(sys.argv[1], "r")
-output_file = open(sys.argv[2], "w")
+parser = argparse.ArgumentParser()
+parser.add_argument("input_file", help="Input file")
+parser.add_argument("output_file", help="Output file")
+args = parser.parse_args()
+
+input_file = args.input_file
+output_file = args.output_file
 
 output_file.write("Repeat_ID\tRepeat_Scaffold\tRepeat_Start\tRepeat_Stop\tGene_Name\tGene_Type\tTranscript_ID\tGene_ID\tProtiein_ID\tScaffold\tStart\tStop\tStrand\tGene_Location\tCDS\n")
 
