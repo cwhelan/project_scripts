@@ -5,20 +5,29 @@ import os
 import shutil
 import subprocess
 import time
+import argparse
 
-if not len(sys.argv) == 10:
-	print "Usage: build_novoalign_tier1.py working_dir reference read_file1 read_file2 target_isize isize_sd tier1_stat_file threshold frag_type(MP|PE|MP_NOPE)" 
-	exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("working_dir", help="Working directory")
+parser.add_argument("reference", help="Novoalign reference file")
+parser.add_argument("read_file1", help="fastq file of read 1 of read pairs to be realigned")
+parser.add_argument("read_file2", help="fastq file of read 2 of read pairs to be realigned")
+parser.add_argument("target_isize", help="library insert size", type=int)
+parser.add_argument("isize_sd", help="library insert size standard deviation", type=int)
+parser.add_argument("tier1_stat_file", help="statistics file for tier 1 alignment")
+parser.add_argument("threshold", help="Novoalign alignment threshold", type=int)
+parser.add_argument("frag_type", help="Fragment type (MP|PE|MP_NOPE)")
+args = parser.parse_args()
 
-working_dir = sys.argv[1]
-reference = sys.argv[2]
-read_file1 = sys.argv[3]
-read_file2 = sys.argv[4]
-target_isize = sys.argv[5]
-isize_sd = sys.argv[6]
-tier1_stat_file=sys.argv[7]
-threshold=sys.argv[8]
-frag_type = sys.argv[9]
+working_dir = args.working_dir
+reference = args.reference
+read_file1 = args.read_file1
+read_file2 = args.read_file2
+target_isize = str(args.target_isize)
+isize_sd = str(args.isize_sd)
+tier1_stat_file = args.tier1_stat_file
+threshold = str(args.threshold)
+frag_type = args.frag_type
 
 chunk_size = 100000
 
