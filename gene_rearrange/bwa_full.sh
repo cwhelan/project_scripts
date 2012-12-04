@@ -11,6 +11,7 @@ RGID=$5
 LIBRARY=$6
 SAMPLE=$7
 ADDITIONAL_BWA_ALN_PARAMS=$8
+ADDITIONAL_BWA_SAMPE_PARAMS=$9
 
 READ1_BASE=`basename $READ_FILE1`
 READ2_BASE=`basename $READ_FILE2`
@@ -20,7 +21,7 @@ echo "/g/whelanch/software/bin/bwa aln -t 8 $ADDITIONAL_BWA_ALN_PARAMS $REFERENC
 echo "/g/whelanch/software/bin/bwa aln -t 8 $ADDITIONAL_BWA_ALN_PARAMS $REFERENCE $READ_FILE2 > $READ2_BASE.sai"
 /g/whelanch/software/bin/bwa aln -t 8 $ADDITIONAL_BWA_ALN_PARAMS $REFERENCE $READ_FILE2 > $READ2_BASE.sai
 
-SAMPE_CMD="/g/whelanch/software/bin/bwa sampe -r '@RG\tID:"${RGID}"\tLB:"${LIBRARY}"\tSM:"${SAMPLE}"' $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_PREFIX.bam"
+SAMPE_CMD="/g/whelanch/software/bin/bwa sampe $ADDITIONAL_BWA_SAMPE_PARAMS -r '@RG\tID:"${RGID}"\tLB:"${LIBRARY}"\tSM:"${SAMPLE}"' $REFERENCE $READ1_BASE.sai $READ2_BASE.sai $READ_FILE1 $READ_FILE2 | samtools view -Sb - > $OUTFILE_PREFIX.bam"
 echo $SAMPE_CMD
 eval $SAMPE_CMD
 
