@@ -8,6 +8,8 @@ library(plyr)
 library(ggplot2)
 library(doMC)
 
+library(bsseq)
+
 registerDoMC(4)
 
 source('/u0/dbase/cw/project_scripts/methyl-analysis/methyl_analysis_functions.R')
@@ -100,7 +102,9 @@ intermediateCpgRanges <- buildCpgRanges(intermediateMethylationSummary, 6)
 #hg19UCSCGenes <- makeTranscriptDbFromUCSC(genome = "hg19", tablename = "knownGene")
 #saveDb(hg19UCSCGenes, "~/hg19UCSCGenes.sqlite")
 
-hg19UCSCGenes <- loadDb("~/hg19UCSCGenes.sqlite")
+library(Homo.sapiens)
+
+hg19UCSCGenes <- TxDb.Hsapiens.UCSC.hg19.knownGene
 
 genes <- transcripts(hg19UCSCGenes)
 
@@ -161,23 +165,23 @@ meanMethRateByIndex <- function(indices, methRates) {
   data.frame(num=length(indices), rate=mean(methRates[indices]))
 }
 
-geneMethRates <- function(cpgs, geneMaxRanges) {         
-  geneOverlaps <- as.matrix(findOverlaps(geneMaxRanges, cpgs))
-  geneOverlapsDf <- data.frame(geneOverlaps)
-  geneCpgList <- lapply(split(geneOverlapsDf, as.factor(geneOverlapsDf[,1])), function(x) { x[,2]})
+featureMeanMethRates <- function(cpgs, feats) {         
+  overlaps <- as.matrix(findOverlaps(feats, cpgs))
+  overlapsDf <- data.frame(overlaps)
+  cpgList <- lapply(split(overlapsDf, as.factor(overlapsDf[,1])), function(x) { x[,2]})
   cpgMethRates <- methRates(cpgs)
 
-  return(do.call("rbind", lapply(seq_along(geneCpgList), function(i) {
-    data.frame(id=names(geneMaxRanges)[as.numeric(names(geneCpgList)[i])], num=length(geneCpgList[[i]]), rate=mean(cpgMethRates[geneCpgList[[i]]]))
+  return(do.call("rbind", lapply(seq_along(cpgList), function(i) {
+    data.frame(id=names(feats)[as.numeric(names(cpgList)[i])], num=length(cpgList[[i]]), rate=mean(cpgMethRates[cpgList[[i]]]))
   })))
 
 }
 
-normalGeneMethRates <- geneMethRates(normalCpgRanges, geneMaxRanges)
+normalGeneMethRates <- featureMeanMethRates(normalCpgRanges, geneMaxRanges)
 
-cancerGeneMethRates <- geneMethRates(cancerCpgRanges, geneMaxRanges)
+cancerGeneMethRates <- featureMeanMethRates(cancerCpgRanges, geneMaxRanges)
 
-intermediateGeneMethRates <- geneMethRates(intermediateCpgRanges, geneMaxRanges)
+intermediateGeneMethRates <- featureMeanMethRates(intermediateCpgRanges, geneMaxRanges)
 
 pdf('normalGeneMethRates.pdf')
 hist(normalGeneMethRates$rate)
@@ -218,3 +222,110 @@ dev.off()
 cancerGeneMethRatesFiltered <- cancerGeneMethRates[cancerGeneMethRates$num > 20,]
 normalGeneMethRatesFiltered <- normalGeneMethRates[normalGeneMethRates$num > 20,]
 intermediateGeneMethRatesFiltered <- intermediateGeneMethRates[intermediateGeneMethRates$num > 20,]
+
+# add gene names by Entrez ID
+e2s <- toTable(org.Hs.egSYMBOL)
+
+cancerGeneMethRatesFiltered <- merge(cancerGeneMethRatesFiltered, e2s, by.x="id", by.y="gene_id")
+normalGeneMethRatesFiltered <- merge(normalGeneMethRatesFiltered, by.x="id", e2s, by.y="gene_id")
+intermediateGeneMethRatesFiltered <- merge(intermediateGeneMethRatesFiltered, by.x="id", e2s, by.y="gene_id")
+
+promoterRanges <- flank(geneMaxRanges, 2000)
+
+normalPromoterMethRates <- featureMeanMethRates(normalCpgRanges, promoterRanges)
+normalPromoterMethRatesFiltered <- normalPromoterMethRates[normalPromoterMethRates$num > 10,]
+normalPromoterMethRatesFiltered <- merge(normalPromoterMethRatesFiltered, by.x="id", e2s, by.y="gene_id")
+
+cancerPromoterMethRates <- featureMeanMethRates(cancerCpgRanges, promoterRanges)
+cancerPromoterMethRatesFiltered <- cancerPromoterMethRates[cancerPromoterMethRates$num > 10,]
+cancerPromoterMethRatesFiltered <- merge(cancerPromoterMethRatesFiltered, by.x="id", e2s, by.y="gene_id")
+
+intermediatePromoterMethRates <- featureMeanMethRates(intermediateCpgRanges, promoterRanges)
+intermediatePromoterMethRatesFiltered <- cancerPromoterMethRates[cancerPromoterMethRates$num > 10,]
+intermediatePromoterMethRatesFiltered <- merge(intermediatePromoterMethRatesFiltered, by.x="id", e2s, by.y="gene_id")
+
+exportRankedList <- function(methRates, fileName) {
+   rankedList <- methRates[order(methRates$rate * -1), c("symbol", "rate")]
+   write.table(rankedList, file=fileName, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+}
+
+exportRankedList(cancerGeneMethRatesFiltered, "cancerGene.rnk")
+exportRankedList(normalGeneMethRatesFiltered, "normalGene.rnk")
+exportRankedList(intermediateGeneMethRatesFiltered, "intermediateGene.rnk")
+
+normalCancerGene <- merge(normalGeneMethRatesFiltered, cancerGeneMethRatesFiltered, by=c("id", "symbol"), suffixes=c("normal","cancer"))
+normalCancerGene$rate <- normalCancerGene$ratecancer - normalCancerGene$ratenormal
+exportRankedList(normalCancerGene, "normalCancerDiff.rnk")
+
+normalIntermediateGene <- merge(normalGeneMethRatesFiltered, intermediateGeneMethRatesFiltered, by=c("id", "symbol"), suffixes=c("normal","intermediate"))
+normalIntermediateGene$rate <- normalIntermediateGene$rateintermediate - normalIntermediateGene$ratenormal
+exportRankedList(normalIntermediateGene, "normalIntermediateDiff.rnk")
+
+intermediateCancerGene <- merge(intermediateGeneMethRatesFiltered, cancerGeneMethRatesFiltered, by=c("id", "symbol"), suffixes=c("intermediate","cancer"))
+intermediateCancerGene$rate <- intermediateCancerGene$ratecancer - intermediateCancerGene$rateintermediate
+exportRankedList(intermediateCancerGene, "intermediateCancerDiff.rnk")
+
+exportRankedList(cancerPromoterMethRatesFiltered, "cancerPromoter.rnk")
+exportRankedList(normalPromoterMethRatesFiltered, "normalPromoter.rnk")
+exportRankedList(intermediatePromoterMethRatesFiltered, "intermediatePromoter.rnk")
+
+normalCancerPromoter <- merge(normalPromoterMethRatesFiltered, cancerPromoterMethRatesFiltered, by=c("id", "symbol"), suffixes=c("normal","cancer"))
+normalCancerPromoter$rate <- normalCancerPromoter$ratecancer - normalCancerPromoter$ratenormal
+exportRankedList(normalCancerPromoter, "normalCancerPromoterDiff.rnk")
+
+normalIntermediatePromoter <- merge(normalPromoterMethRatesFiltered, intermediatePromoterMethRatesFiltered, by=c("id", "symbol"), suffixes=c("normal","intermediate"))
+normalIntermediatePromoter$rate <- normalIntermediatePromoter$rateintermediate - normalIntermediatePromoter$ratenormal
+exportRankedList(normalIntermediatePromoter, "normalIntermediatePromoterDiff.rnk")
+
+intermediateCancerPromoter <- merge(intermediatePromoterMethRatesFiltered, cancerPromoterMethRatesFiltered, by=c("id", "symbol"), suffixes=c("intermediate","cancer"))
+intermediateCancerPromoter$rate <- intermediateCancerPromoter$ratecancer - intermediateCancerPromoter$rateintermediate
+exportRankedList(intermediateCancerPromoter, "intermediateCancerPromoterDiff.rnk")
+
+# do bsseq smoothing
+
+mergedSummary <- merge(normalMethylationSummary, cancerMethylationSummary,
+                       by=c("chr", "start", "strand", "end"),
+                       suffixes=c("normal","cancer"))
+
+bs.fit <- BSseq(M=as.matrix(mergedSummary[,c("methnormal","methcancer")]),
+                C=as.matrix(cbind(mergedSummary[,"methnormal"] + mergedSummary[,"unmethnormal"],
+                                  mergedSummary[,"methcancer"] + mergedSummary[,"unmethcancer"])),
+                pos=mergedSummary$start,
+                chr=mergedSummary$chr,
+                sampleNames=c("normal","cancer"))
+
+bs.fit <- orderBSseq(bs.fit)                
+bs.fit <- BSmooth(bs.fit, mc.cores = 4, verbose = TRUE, parallelBy = "chromosome")
+
+
+keepLoci.ex <- which(getCoverage(bs.fit)[, "cancer"] >= 2  & getCoverage(bs.fit)[, "normal"] >= 2)
+
+bs.fit.filt <- bs.fit[keepLoci.ex,]
+
+bpAnchoringRegions <- import.bed('LC3961_vs_41_stringent_high_score_anchoring_regions.bed', asRangedData=FALSE)
+
+amlGeneSymbols <- c( "CTDSPL","ZBTB20", "CAV2", "NBEAL1","WIF1", "SFRP1", "SFRP2", "SFRP4", "SFRP5", "DKK1", "PRDM16", "CDKN2B", "CDKN2A", "WT1", "DNMT3A", "DNMT3L", "DNMT3B", "DNMT1", "CEBPA", "CDH1", "RUNX1")
+
+amlGeneIds <-  select(Homo.sapiens, keys=amlGeneSymbols, cols=c("ENTREZID"), keytype="SYMBOL")$ENTREZID
+
+amlGenes <- geneMaxRanges[amlGeneIds]
+
+cpgIslands <- import.gff('/u0/dbase/genomes/human/features/human_cpgislands.gff', asRangedData=FALSE)
+
+repmask <- import.gff3('/u0/dbase/genomes/human/features/human_repmask.gff', asRangedData=FALSE)
+
+repsByClass <- split(repmask, as.factor(mcols(repmask)$repClass))
+
+pData <- pData(bs.fit)
+pData$col <- c("blue", "red")
+pData(bs.fit) <- pData
+
+annotations <- c(list(breakpoints=bpAnchoringRegions, exons=exons(hg19UCSCGenes),
+                    "CpG islands"=cpgIslands),
+                 as.list(repsByClass[c("LINE","SINE","Satellite","Simple_repeat")]))
+
+pdf('amlGenesSmoothed.pdf', width=11, height=10)
+plotManyRegions(bs.fit, unlist(amlGenes), extend=5000, main=amlGeneSymbols,
+                annoTrack=annotations,
+                )
+dev.off()

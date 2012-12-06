@@ -15,10 +15,10 @@ debug.rows <- 1000000
 
 # input files
 methylationData <- '/u0/dbase/cw/tomas_BS/gibbon/gibbon_methylation_summary.txt.gz'
-lava.data.file <- '/u0/dbase/cw/lava2/lava.ensembl.denorm.txt'
+lava.data.file <- '/u0/dbase/cw/lava/final/final_good_lava_list.bed-e70.intersect.5kbpFlank.denorm.txt'
 sampleName <- 'gibbon'
-output.dir <- '/u0/dbase/cw/lava3'
-genes.file <- '/u0/dbase/genomes/gibbon/features/gibbon_genes_ensmbl.gff'
+output.dir <- '/u0/dbase/cw/lava/final'
+genes.file <- '/u0/dbase/genomes/gibbon/features/gibbon_e70_GENES.gff'
 all.lavas.file <- '/u0/dbase/genomes/gibbon/features/Lavas.final.gff'
 
 # parameters
@@ -124,7 +124,7 @@ test.nearest.features <- function(lavas, feature.name, features, cpgRanges) {
 }
 
 # import the methylation data
-cpgRanges <- import.cpg.methylation(methylationData, coverageThreshold, sampleName, output.dir, debugging, debug.rows)
+cpgRanges <- import.cpg.methylation(methylationData, coverageThreshold, sampleName, output.dir, debugging, debug.rows, seqNameSuffix=".1")
 
 ## lava data format:
 ## Gene_Name       Gene_Type       Transcript_ID   Gene_ID Protiein_ID     Scaffold        Start   Stop    Strand  Gene_Location     Repeat_Scaffold Repeat_Start    Repeat_Stop     Hit_type
@@ -168,7 +168,7 @@ wt <- wilcox.test(lava.gene.cpg.rate, non.lava.gene.cpg.rate, paired=F, alternat
 print(wt)
 
 # create GRanges for the lavas
-lavas <- unique(with(lava.data, GRanges(seqnames=Scaffold, ranges=IRanges(start=Repeat_Start, end=Repeat_Stop), strand='+')))
+lavas <- unique(with(lava.data, GRanges(seqnames=paste(Scaffold, ".1", sep=""), ranges=IRanges(start=Repeat_Start, end=Repeat_Stop), strand='+')))
 
 # remove the cpgs that are actually in lavas themselves from lava.gene.cpgs
 lava.gene.nonrepeat.cpgs <- lava.gene.cpgs[-1 * as.matrix(findOverlaps(reduce(lavas, ignore.strand=TRUE), lava.gene.cpgs))[,2],]
@@ -187,7 +187,8 @@ print(wt2)
 
 # test cpg island methylation rate near lavas vs others
 cpg.island.data <- read.table('/u0/dbase/genomes/gibbon/features/gibbon_cpgislands.gff')
-cpg.islands <- with(cpg.island.data, GRanges(seqnames=V1, ranges=IRanges(start=V4, end=V5), strand='*'))
+cpg.islands <- with(cpg.island.data, GRanges(seqnames=paste(V1, ".1", sep=""), ranges=IRanges(start=V4, end=V5), strand='*'))
+
 test.features.near.lavas(lavas, "CpG_Islands", cpg.islands, cpgRanges, 10000)
 test.features.near.lavas(lavas, "CpG_Islands", cpg.islands, cpgRanges, 15000)
 test.features.near.lavas(lavas, "CpG_Islands", cpg.islands, cpgRanges, 20000)

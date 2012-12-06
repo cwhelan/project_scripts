@@ -522,13 +522,20 @@ plotMultipleBinnedMethRateInWindows <- function(methRateInBins, names, numBins, 
   if(!is.null(file)) dev.off()    
 }
 
-import.cpg.methylation <- function(methylation.data.file, coverage.threshold, sample.name, output.dir, debugging=FALSE, debug.rows=NA) {
+import.cpg.methylation <- function(methylation.data.file, coverage.threshold,
+                                   sample.name, output.dir,
+                                   seqNameSuffix=NA,debugging=FALSE, debug.rows=NA) {
   print(paste("Reading file", methylation.data.file))
   classes <- c("factor","integer","factor","integer","integer")
   
   methylationSummary <- read.table(methylation.data.file, colClasses=classes, nrows=ifelse(debugging, debug.rows, -1))
   print(paste("Number of CpGs Examined:", dim(methylationSummary)[1]))
   names(methylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
+
+  # use this for eg pasting a ".1" on the end of scaffold names to match up with Ensembl
+  if (! is.na(seqNameSuffix)) {
+    methylationSummary$chr <- paste(methylationSummary$chr, seqNameSuffix, sep="")
+  }
   
   cpgsWithSufficientCoverage <- subset(methylationSummary, meth + unmeth >= coverage.threshold)
   rm(methylationSummary)
