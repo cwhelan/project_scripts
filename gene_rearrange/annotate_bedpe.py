@@ -18,6 +18,8 @@
 # reference, and the mapping to a distant TE is likely an alignment artifact.
 # 2) Deletions where the deleted portion overlaps a TE are more likely TE insertions in the reference than actual deletions in the sample.
 #
+# Optional annotation files:
+#
 # common_deletions: This is meant to be a set of variants commonly occuring in the population (and therefore less likely to be implicated in
 # cancer) Currently taken from the 1000 Genomes project SV pilot data.
 #
@@ -37,19 +39,15 @@ import pybedtools
 import subprocess
 import argparse
 
-if len(sys.argv) != 9:
-    print "Usage: annotate_bedpe.py bedpe_file te_file common_deletions_file insert_size output_dir seg_dups cent_tel sample_name"
-    sys.exit()
-
 parser = argparse.ArgumentParser()
 parser.add_argument("bedpe_file", help="BEDPE file of sv call anchoring regions")
-parser.add_argument("te_file", help="BED file of transposable element annotations")
-parser.add_argument("common_deletions_file", help="BED file of common deletions")
 parser.add_argument("insert_size", type=int, help="Insert size of the library")
 parser.add_argument("output_dir", help="directory into which to put annotations")
-parser.add_argument("seg_dups_file", help="BED file of segmental duplications")
-parser.add_argument("cent_tel_file", help="BED file of centromeric/telomeric regions")
 parser.add_argument("sample_name", help="name of the sample being analyzed")
+parser.add_argument("te_file", help="BED file of transposable element annotations")
+parser.add_argument("--seg_dups_file", help="BED file of segmental duplications")
+parser.add_argument("--cent_tel_file", help="BED file of centromeric/telomeric regions")
+parser.add_argument("--common_deletions_file", help="BED file of common deletions")
 
 args = parser.parse_args()
 
@@ -207,23 +205,25 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup.bedpe', track_name)            
 
     # find calls overlapping segmental duplications
-    seg_dup_overlap = calls.pair_to_bed(seg_dups, f=1, type="either").cut(xrange(0,22)).saveas(output_dir + "/tmp." + file_name + "_dedup_segdup.bedpe")
-    seg_dup_overlap = uniqify(seg_dup_overlap, output_dir, file_name + "_dedup_segdup.bedpe")
-    convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_segdup.bedpe', track_name + "_IN_SEG_DUPS")    
-    subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_segdup.bedpe.bed', shell=True, stdout=master_out_bed)
+    if seg_dups != None:
+        seg_dup_overlap = calls.pair_to_bed(seg_dups, f=1, type="either").cut(xrange(0,22)).saveas(output_dir + "/tmp." + file_name + "_dedup_segdup.bedpe")
+        seg_dup_overlap = uniqify(seg_dup_overlap, output_dir, file_name + "_dedup_segdup.bedpe")
+        convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_segdup.bedpe', track_name + "_IN_SEG_DUPS")    
+        subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_segdup.bedpe.bed', shell=True, stdout=master_out_bed)
 
     # find calls overlapping peri- centromeric and telomeric regions
-    cent_tel_overlap = calls.pair_to_bed(cent_tel, f=1, type="either").cut(xrange(0,22)).saveas(output_dir + "/tmp." + file_name + "_dedup_cent_tel.bedpe")
-    cent_tel_overlap = uniqify(cent_tel_overlap, output_dir, file_name + "_dedup_cent_tel.bedpe")
-    convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_cent_tel.bedpe', track_name + "_IN_CENT_TEL")    
-    subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_cent_tel.bedpe.bed', shell=True, stdout=master_out_bed)
+    if cent_tel != None:
+        cent_tel_overlap = calls.pair_to_bed(cent_tel, f=1, type="either").cut(xrange(0,22)).saveas(output_dir + "/tmp." + file_name + "_dedup_cent_tel.bedpe")
+        cent_tel_overlap = uniqify(cent_tel_overlap, output_dir, file_name + "_dedup_cent_tel.bedpe")
+        convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_cent_tel.bedpe', track_name + "_IN_CENT_TEL")    
+        subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_cent_tel.bedpe.bed', shell=True, stdout=master_out_bed)
 
     # subract SD and C/T calls from the stringent set
-    if len(seg_dup_overlap) > 0:
+    if seg_dup != None and len(seg_dup_overlap) > 0:
         stringent_minus_sd = calls.pair_to_pair(seg_dup_overlap, type="notboth").saveas()
     else:
         stringent_minus_sd = calls
-    if len(cent_tel_overlap) > 0:
+    if cent_tel != None and len(cent_tel_overlap) > 0:
         stringent_minus_ct = stringent_minus_sd.pair_to_pair(cent_tel_overlap, type="notboth").saveas()
     else:
         stringent_minus_ct = stringent_minus_sd
@@ -267,16 +267,20 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_stringent_low_score.bedpe', track_name + "_STRINGENT_LOW_SCORE")    
     subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_stringent_low_score.bedpe.bed', shell=True, stdout=master_out_bed)    
 
-    print sv_type + "\tSEGMENTAL_DUPLICATION\t" + str(len(seg_dup_overlap))
-    print sv_type + "\tIN_PERI_CENTROMERE_TELOMERE\t" + str(len(cent_tel_overlap))
+    if seg_dup != None:
+        print sv_type + "\tSEGMENTAL_DUPLICATION\t" + str(len(seg_dup_overlap))
+    if cent_tel != None:
+        print sv_type + "\tIN_PERI_CENTROMERE_TELOMERE\t" + str(len(cent_tel_overlap))
     print sv_type + "\tSTRINGENT_VERY_SHORT\t" + str(len(very_short_stringent))
     print sv_type + "\tSTRINGENT_SHORT\t" + str(len(short_stringent))
     print sv_type + "\tTOTAL_STRINGENT\t" + str(len(stringent_minus_vss))
     print sv_type + "\tSTRINGENT_LOW_SCORE\t" + str(len(stringent_low_score))
     print sv_type + "\tSTRINGENT_HIGH_SCORE\t" + str(len(stringent_high_score))
 
-    log.write( sv_type + "\tSEGMENTAL_DUPLICATION\t" + str(len(seg_dup_overlap)) + "\n")
-    log.write( sv_type + "\tIN_PERI_CENTROMERE_TELOMERE\t" + str(len(cent_tel_overlap)) + "\n")
+    if seg_dup != None:
+        log.write( sv_type + "\tSEGMENTAL_DUPLICATION\t" + str(len(seg_dup_overlap)) + "\n")
+    if cent_tel != None:
+        log.write( sv_type + "\tIN_PERI_CENTROMERE_TELOMERE\t" + str(len(cent_tel_overlap)) + "\n")
     log.write( sv_type + "\tSTRINGENT_VERY_SHORT\t" + str(len(very_short_stringent)) + "\n")
     log.write( sv_type + "\tSTRINGENT_SHORT\t" + str(len(short_stringent)) + "\n")
     log.write( sv_type + "\tTOTAL_STRINGENT\t" + str(len(stringent_minus_vss)) + "\n")
@@ -287,9 +291,13 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
 bedpe_calls = pybedtools.BedTool(bedpe_file)
 
 tes = pybedtools.BedTool(te_file)
-common_deletions = pybedtools.BedTool(common_deletions_file)
 seg_dups = pybedtools.BedTool(seg_dups_file)
-cent_tel = pybedtools.BedTool(cent_tel_file)
+
+if cent_tel != None:
+    cent_tel = pybedtools.BedTool(cent_tel_file)
+
+if common_deletions != None:
+    common_deletions = pybedtools.BedTool(common_deletions_file)
 
 master_out_bed = open(output_dir + "/" + sample_name + "_svs.bed", 'a')
 
@@ -332,11 +340,12 @@ log.write("POSSIBLE_TE_INSERTIONS_IN_REFERENCE\tALL\t" + str(len(filtered_possib
 save_output(master_out_bed, filtered_possible_te_reference_insertions, output_dir, "possible_te_reference_insertions", sample_name, "POSSIBLE_TE_INSERTIONS_IN_REFERENCE", seg_dups, cent_tel)
 
 # deletions that match population variants
-common_deletions = long_indel_intra_calls.pair_to_bed(common_deletions, type="ispan", f=common_deletion_overlap_pct).saveas()
-filtered_possible_common_deletions = common_deletions.filter(bedpe_reciprocal_overlap_ispan_filter, common_deletion_overlap_pct).saveas()
-print "COMMON_DELETIONS\tALL\t" + str(len(filtered_possible_common_deletions))
-log.write("COMMON_DELETIONS\tALL\t" + str(len(filtered_possible_common_deletions)) + "\n")
-save_output(master_out_bed, filtered_possible_common_deletions, output_dir, "possible_common_deletions", sample_name, "COMMON_DELETIONS", seg_dups, cent_tel)
+if common_deletions != None:
+    common_deletions = long_indel_intra_calls.pair_to_bed(common_deletions, type="ispan", f=common_deletion_overlap_pct).saveas()
+    filtered_possible_common_deletions = common_deletions.filter(bedpe_reciprocal_overlap_ispan_filter, common_deletion_overlap_pct).saveas()
+    print "COMMON_DELETIONS\tALL\t" + str(len(filtered_possible_common_deletions))
+    log.write("COMMON_DELETIONS\tALL\t" + str(len(filtered_possible_common_deletions)) + "\n")
+    save_output(master_out_bed, filtered_possible_common_deletions, output_dir, "possible_common_deletions", sample_name, "COMMON_DELETIONS", seg_dups, cent_tel)
 
 # insertions are shorter than the fragment size
 short_indel_intra_calls = expected_orientation.filter(bedpe_lt_length_filter, insert_size).saveas()
