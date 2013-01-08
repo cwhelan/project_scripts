@@ -205,25 +205,25 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup.bedpe', track_name)            
 
     # find calls overlapping segmental duplications
-    if seg_dups != None:
+    if seg_dups is not None:
         seg_dup_overlap = calls.pair_to_bed(seg_dups, f=1, type="either").cut(xrange(0,22)).saveas(output_dir + "/tmp." + file_name + "_dedup_segdup.bedpe")
         seg_dup_overlap = uniqify(seg_dup_overlap, output_dir, file_name + "_dedup_segdup.bedpe")
         convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_segdup.bedpe', track_name + "_IN_SEG_DUPS")    
         subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_segdup.bedpe.bed', shell=True, stdout=master_out_bed)
 
     # find calls overlapping peri- centromeric and telomeric regions
-    if cent_tel != None:
+    if cent_tel is not None:
         cent_tel_overlap = calls.pair_to_bed(cent_tel, f=1, type="either").cut(xrange(0,22)).saveas(output_dir + "/tmp." + file_name + "_dedup_cent_tel.bedpe")
         cent_tel_overlap = uniqify(cent_tel_overlap, output_dir, file_name + "_dedup_cent_tel.bedpe")
         convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_cent_tel.bedpe', track_name + "_IN_CENT_TEL")    
         subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_cent_tel.bedpe.bed', shell=True, stdout=master_out_bed)
 
     # subract SD and C/T calls from the stringent set
-    if seg_dup != None and len(seg_dup_overlap) > 0:
+    if seg_dups is not None and len(seg_dup_overlap) > 0:
         stringent_minus_sd = calls.pair_to_pair(seg_dup_overlap, type="notboth").saveas()
     else:
         stringent_minus_sd = calls
-    if cent_tel != None and len(cent_tel_overlap) > 0:
+    if cent_tel is not None and len(cent_tel_overlap) > 0:
         stringent_minus_ct = stringent_minus_sd.pair_to_pair(cent_tel_overlap, type="notboth").saveas()
     else:
         stringent_minus_ct = stringent_minus_sd
@@ -267,9 +267,9 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     convert_bedpe_to_bed12(output_dir + "/" + file_name + '_dedup_stringent_low_score.bedpe', track_name + "_STRINGENT_LOW_SCORE")    
     subprocess.call("cat " + output_dir + "/" + file_name + '_dedup_stringent_low_score.bedpe.bed', shell=True, stdout=master_out_bed)    
 
-    if seg_dup != None:
+    if seg_dups is not None:
         print sv_type + "\tSEGMENTAL_DUPLICATION\t" + str(len(seg_dup_overlap))
-    if cent_tel != None:
+    if cent_tel is not None:
         print sv_type + "\tIN_PERI_CENTROMERE_TELOMERE\t" + str(len(cent_tel_overlap))
     print sv_type + "\tSTRINGENT_VERY_SHORT\t" + str(len(very_short_stringent))
     print sv_type + "\tSTRINGENT_SHORT\t" + str(len(short_stringent))
@@ -277,9 +277,9 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
     print sv_type + "\tSTRINGENT_LOW_SCORE\t" + str(len(stringent_low_score))
     print sv_type + "\tSTRINGENT_HIGH_SCORE\t" + str(len(stringent_high_score))
 
-    if seg_dup != None:
+    if seg_dups is not None:
         log.write( sv_type + "\tSEGMENTAL_DUPLICATION\t" + str(len(seg_dup_overlap)) + "\n")
-    if cent_tel != None:
+    if cent_tel is not None:
         log.write( sv_type + "\tIN_PERI_CENTROMERE_TELOMERE\t" + str(len(cent_tel_overlap)) + "\n")
     log.write( sv_type + "\tSTRINGENT_VERY_SHORT\t" + str(len(very_short_stringent)) + "\n")
     log.write( sv_type + "\tSTRINGENT_SHORT\t" + str(len(short_stringent)) + "\n")
@@ -291,13 +291,21 @@ def save_output(master_out_bed, calls, output_dir, file_name, sample_name, sv_ty
 bedpe_calls = pybedtools.BedTool(bedpe_file)
 
 tes = pybedtools.BedTool(te_file)
-seg_dups = pybedtools.BedTool(seg_dups_file)
 
-if cent_tel != None:
+if seg_dups_file is not None:
+    seg_dups = pybedtools.BedTool(seg_dups_file)
+else:
+    seg_dups = None
+
+if cent_tel_file is not None:
     cent_tel = pybedtools.BedTool(cent_tel_file)
+else:
+    cent_tel = None
 
-if common_deletions != None:
+if common_deletions_file is not None:
     common_deletions = pybedtools.BedTool(common_deletions_file)
+else:
+    common_deletions = None
 
 master_out_bed = open(output_dir + "/" + sample_name + "_svs.bed", 'a')
 
@@ -340,7 +348,7 @@ log.write("POSSIBLE_TE_INSERTIONS_IN_REFERENCE\tALL\t" + str(len(filtered_possib
 save_output(master_out_bed, filtered_possible_te_reference_insertions, output_dir, "possible_te_reference_insertions", sample_name, "POSSIBLE_TE_INSERTIONS_IN_REFERENCE", seg_dups, cent_tel)
 
 # deletions that match population variants
-if common_deletions != None:
+if common_deletions is not None:
     common_deletions = long_indel_intra_calls.pair_to_bed(common_deletions, type="ispan", f=common_deletion_overlap_pct).saveas()
     filtered_possible_common_deletions = common_deletions.filter(bedpe_reciprocal_overlap_ispan_filter, common_deletion_overlap_pct).saveas()
     print "COMMON_DELETIONS\tALL\t" + str(len(filtered_possible_common_deletions))
