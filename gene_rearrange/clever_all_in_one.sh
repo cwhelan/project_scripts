@@ -12,4 +12,5 @@ FILE_PREFIX=`echo $FILE_NAME | awk -F. '{ print $1 }'`
 
 OUTPUT_DIR=${FILE_PREFIX}_clever_all_in_one
 
-clever-all-in-one -T 4 $BAM_FILE $REF $OUTPUT_DIR
+echo "clever-all-in-one -B -T 4 -I $BAM_FILE $REF $OUTPUT_DIR"
+clever-all-in-one -k -B -T 4 -I  $BAM_FILE $REF $OUTPUT_DIR
