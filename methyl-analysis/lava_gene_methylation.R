@@ -7,6 +7,7 @@ library(GenomicFeatures)
 library(doMC)
 library(foreach)
 library(plyr)
+library(biomaRt)
 
 source('/u0/dbase/cw/project_scripts/methyl-analysis/methyl_analysis_functions.R')
 
@@ -272,6 +273,11 @@ mean.meth.rate.by.index <- function(indices, meth.rates) {
   mean(meth.rates[indices])
 }
 
+methDataInRanges <- function(ranges, cpgs) {
+  selectedCpgIndices <- as.matrix(findOverlaps(reduce(ranges, ignore.strand=TRUE), cpgs))[,2]
+  d <- data.frame(cpg=selectedCpgIndices, cov=cpg.coverage(cpgs[selectedCpgIndices]), rate=meth.rates(cpgs[selectedCpgIndices]))
+}
+
 # find the mean methylation rate of every gibbon gene
 gene.overlaps <- as.matrix(findOverlaps(genes, cpgRanges))
 gene.overlaps.df <- data.frame(gene.overlaps)
@@ -428,15 +434,13 @@ human.non.lava.gene.orthos <- human.gene.max.ranges[elementMetadata(human.gene.m
 
 human.cpg.ranges <- import.cpg.methylation('/u0/dbase/cw/tomas_BS/human_methylation_summary.b37.txt.gz', coverageThreshold, 'human', output.dir, debugging, debug.rows)
 
-human.lava.gene.ortho.cpgs <- human.cpg.ranges[as.matrix(findOverlaps(reduce(human.lava.gene.orthos, ignore.strand=TRUE), human.cpg.ranges))[,2],]
+human.lava.gene.meth.data <- methDataInRanges(human.lava.gene.orthos, human.cpg.ranges)
+human.lava.gene.ortho.cpg.cov <- human.lava.gene.meth.data$cov
+human.lava.gene.ortho.cpg.rate <- human.lava.gene.meth.data$rate
 
-human.lava.gene.ortho.cpg.cov <- cpg.coverage(human.lava.gene.ortho.cpgs)
-human.lava.gene.ortho.cpg.rate <- meth.rates(human.lava.gene.ortho.cpgs)
-
-human.non.lava.gene.ortho.cpgs <- human.cpg.ranges[as.matrix(findOverlaps(reduce(human.non.lava.gene.orthos, ignore.strand=TRUE), human.cpg.ranges))[,2],]
-
-human.non.lava.gene.ortho.cpg.cov <- cpg.coverage(human.non.lava.gene.ortho.cpgs)
-human.non.lava.gene.ortho.cpg.rate <- meth.rates(human.non.lava.gene.ortho.cpgs)
+human.non.lava.gene.meth.data <- methDataInRanges(human.non.lava.gene.orthos, human.cpg.ranges)
+human.non.lava.gene.ortho.cpg.cov <- human.non.lava.gene.meth.data$cov
+human.non.lava.gene.ortho.cpg.rate <- human.non.lava.gene.meth.data$rate
 
 # summarize stats and test methylation rate using mann-whitney U test
 print(paste("Human LAVA gene ortholog CpGs:", length(human.lava.gene.ortho.cpgs)))
@@ -496,6 +500,81 @@ summary(cpgs.in.non.gene.lavas.rate)
 
 print(wilcox.test(cpgs.in.gene.lavas.rate, cpgs.in.non.gene.lavas.rate, paired=FALSE, alternative="greater"))
 
+
+# updated ortho gene attempt
+orthos <- read.table('/u0/dbase/cw/lava3/human_gibbon_orang_orthos_correlated.txt', sep="\t", colClasses=c("character","character","character"))
+names(orthos) <- c("gibbon", "human", "orang")
+
+gibbonGeneTranscripts <- import('/u0/dbase/genomes/gibbon/features/gibbon_e70_GENES.wProteinID.gff', asRangedData=FALSE, format="gff2")
+
+ensembl=useMart("ensembl", dataset="pabelii_gene_ensembl")
+
+orangGenesBiomart <- getBM(mart=ensembl, attributes=c("ensembl_gene_id", "ensembl_peptide_id", "chromosome_name", "start_position", "end_position", "strand"))
+
+orangGenes <- with(orangGenesBiomart, GRanges(seqnames=chromosome_name, ranges=IRanges(start=start_position, end=end_position), strand=strand, ensemblGeneId=ensembl_gene_id, ensemblPeptideId=ensembl_peptide_id))
+
+ensembl=useMart("ensembl", dataset="hsapiens_gene_ensembl")
+
+humanGenesBiomart <- getBM(mart=ensembl, attributes=c("ensembl_gene_id", "ensembl_peptide_id", "chromosome_name", "start_position", "end_position", "strand"))
+
+humanGenes <- with(humanGenesBiomart, GRanges(seqnames=chromosome_name, ranges=IRanges(start=start_position, end=end_position), strand=strand, ensemblGeneId=ensembl_gene_id, ensemblPeptideId=ensembl_peptide_id))
+
+gibbonLavaProteinIds <- unique(as.character(lava.data$Protiein_ID))
+gibbonLavaOrthos <- unlist(lapply(gibbonOrthoList, function(x) {any(x %in% gibbonLavaProteinIds)}))
+
+gibbonOrthoList <- strsplit(orthos[human$gibbon, ",")
+humanOrthoList <- strsplit(orthos$human, ",")
+orangOrthoList <- strsplit(orthos$orang, ",")
+
+humanGibbonOrthos <- orthos$gibbon != "" & orthos$human != ""
+
+humanProteinIdsOrthologousToLavaGenes <- humanOrthoList[humanGibbonOrthos & gibbonLavaOrthos]
+humanProteinIdsOrthologousToNonLavaGenes <- humanOrthoList[humanGibbonOrthos & !gibbonLavaOrthos]
+
+humanGenesOrthologousToLavaGenes <- humanGenes[which(mcols(humanGenes)$ensemblPeptideId %in% unlist(humanProteinIdsOrthologousToLavaGenes))]
+humanGenesOrthologousToNonLavaGenes <- humanGenes[which(mcols(humanGenes)$ensemblPeptideId %in% unlist(humanProteinIdsOrthologousToNonLavaGenes))]
+
+humanCpgRanges <- import.cpg.methylation('/u0/dbase/cw/tomas_BS/human_methylation_summary.b37.txt.gz', coverageThreshold, 'human', output.dir, debugging=debugging, debug.rows=debug.rows)
+
+humanGenesOrthologousToLavaGenesMethData <- methDataInRanges(humanGenesOrthologousToLavaGenes, humanCpgRanges)
+
+humanGenesOrthologousToNonLavaGenesMethData <- methDataInRanges(humanGenesOrthologousToNonLavaGenes, humanCpgRanges)
+
+# summarize stats and test methylation rate using mann-whitney U test
+print(paste("Human LAVA gene ortholog CpGs:", dim(humanGenesOrthologousToLavaGenesMethData)[1]))
+summary(humanGenesOrthologousToLavaGenesMethData$cov)
+summary(humanGenesOrthologousToLavaGenesMethData$rate)
+print(paste("Human non-LAVA gene ortholog CpGs:", dim(humanGenesOrthologousToNonLavaGenesMethData)[1]))
+summary(humanGenesOrthologousToNonLavaGenesMethData$cov)
+summary(humanGenesOrthologousToNonLavaGenesMethData$rate)
+
+wt <- wilcox.test(humanGenesOrthologousToLavaGenesMethData$rate, humanGenesOrthologousToNonLavaGenesMethData$rate, paired=F, alternative="greater")
+print(wt)
+
+orangGibbonOrthos <- orthos$gibbon != "" & orthos$orang != ""
+
+orangProteinIdsOrthologousToLavaGenes <- orangOrthoList[orangGibbonOrthos & gibbonLavaOrthos]
+orangProteinIdsOrthologousToNonLavaGenes <- orangOrthoList[orangGibbonOrthos & !gibbonLavaOrthos]
+
+orangGenesOrthologousToLavaGenes <- orangGenes[which(mcols(orangGenes)$ensemblPeptideId %in% unlist(orangProteinIdsOrthologousToLavaGenes))]
+orangGenesOrthologousToNonLavaGenes <- orangGenes[which(mcols(orangGenes)$ensemblPeptideId %in% unlist(orangProteinIdsOrthologousToNonLavaGenes))]
+
+orangCpgRanges <- import.cpg.methylation('/u0/dbase/cw/tomas_BS/orang/orang_methylation_summary.ensemblseqnames.txt.gz', coverageThreshold, 'orang', output.dir, debugging=debugging, debug.rows=debug.rows)
+
+orangGenesOrthologousToLavaGenesMethData <- methDataInRanges(orangGenesOrthologousToLavaGenes, orangCpgRanges)
+
+orangGenesOrthologousToNonLavaGenesMethData <- methDataInRanges(orangGenesOrthologousToNonLavaGenes, orangCpgRanges)
+
+# summarize stats and test methylation rate using mann-whitney U test
+print(paste("Orang LAVA gene ortholog CpGs:", dim(orangGenesOrthologousToLavaGenesMethData)[1]))
+summary(orangGenesOrthologousToLavaGenesMethData$cov)
+summary(orangGenesOrthologousToLavaGenesMethData$rate)
+print(paste("Orang non-LAVA gene ortholog CpGs:", dim(orangGenesOrthologousToNonLavaGenesMethData)[1]))
+summary(orangGenesOrthologousToNonLavaGenesMethData$cov)
+summary(orangGenesOrthologousToNonLavaGenesMethData$rate)
+
+wt <- wilcox.test(orangGenesOrthologousToLavaGenesMethData$rate, orangGenesOrthologousToNonLavaGenesMethData$rate, paired=F, alternative="greater")
+print(wt)
 
 
 sessionInfo()
