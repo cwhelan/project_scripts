@@ -293,10 +293,10 @@ bedpe_calls = pybedtools.BedTool(bedpe_file)
 tes = pybedtools.BedTool(te_file)
 seg_dups = pybedtools.BedTool(seg_dups_file)
 
-if cent_tel != None:
+if cent_tel_file != None:
     cent_tel = pybedtools.BedTool(cent_tel_file)
 
-if common_deletions != None:
+if common_deletions_file != None:
     common_deletions = pybedtools.BedTool(common_deletions_file)
 
 master_out_bed = open(output_dir + "/" + sample_name + "_svs.bed", 'a')
