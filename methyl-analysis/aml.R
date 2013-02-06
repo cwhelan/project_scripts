@@ -33,10 +33,9 @@ if(debugging) {
   print(paste("DEBUGGING IS ON! Will process only", debugNrows, "rows and", debugNwindows, "windows!"))
 }
 
-classes <- c("factor","integer","factor","integer","integer")
-
 loadSummary <- function(fileName) {
   print(paste("Reading file", fileName))
+  classes <- c("factor","integer","factor","integer","integer")
   methylationSummary <- read.table(fileName, colClasses=classes, nrows=ifelse(debugging, debugNrows, -1))
   names(methylationSummary) <- c("chr", "start", "strand", "meth", "unmeth")
   methylationSummary$end <- methylationSummary$start
