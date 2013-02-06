@@ -6,6 +6,22 @@ import subprocess
 import sys
 import tempfile
 
+# validate_breakdancer_supporting_read_mappings_with_megablast.py
+# author: Chris Whelan - cwhelan@gmail.com
+#
+# This script attempts to validate the mappings of supporting read pairs used by Breakdancer to call SVs by
+# remapping the reads to the reference genome using megablast and attempting to find alternative concordant
+# mappings for the reads. The arguments are:
+#
+# bd_read_file_name: the location of the breakdancer supporting reads file, produced by running Breakdancer
+#                    with the -g option
+# bam_file_name: the bam file with all of the mappings
+# isize: the median insert size of the library
+# mad_isize: the median absolute deviation of the library
+# score_cutoff: the cutoff for mappings from megablast to be considered as possible alternatives
+# megablast_out_file_name: file to store the megablast results in
+# (optional) chromsome filter: only process events on this chromsome
+
 class alignment:
     def __init__(self, chrom, start, forward, record):
         self.chrom = chrom
