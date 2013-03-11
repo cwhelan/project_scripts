@@ -51,7 +51,7 @@ def compute_bases_overlapped(feature_file, bp_file, input=None):
 
 def compute_bp_hits(feature_file, bp_file, input=None):
     if bp_file == 'stdin':
-        bp_hits = subprocess.Popen(['intersectBed', '-b', feature_file, '-a', bp_file, '-wb', '-u', '-sorted'], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input)[0]
+        bp_hits = subprocess.Popen(['intersectBed', '-b', feature_file, '-a', bp_file, '-wa', '-u', '-sorted'], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input)[0]
     else:
         bp_hits = subprocess.Popen(['intersectBed', '-b', feature_file, '-a', bp_file, '-wa', '-u', '-sorted'], stdout=subprocess.PIPE).communicate()[0]
     hits = 0
