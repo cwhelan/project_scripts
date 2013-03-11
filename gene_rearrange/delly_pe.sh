@@ -22,4 +22,9 @@ FILE_PREFIX=`echo $FILE_NAME | awk -F. '{ print $1 }'`
 
 PE_OUTFILE=${FILE_PREFIX}.delly_pe_q${MAPQ}_c$MAD_CUTOFF}_del.txt
 
+echo "runing DELLY"
+date +%s
+echo "delly -g $REF -q $MAPQ -s $MAD_CUTOFF -o $PE_OUTFILE $BAM_FILE"
 delly -g $REF -q $MAPQ -s $MAD_CUTOFF -o $PE_OUTFILE $BAM_FILE
+echo "done"
+date +%s

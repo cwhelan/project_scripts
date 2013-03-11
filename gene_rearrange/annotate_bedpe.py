@@ -302,6 +302,7 @@ if cent_tel_file is not None:
 else:
     cent_tel = None
 
+
 if common_deletions_file is not None:
     common_deletions = pybedtools.BedTool(common_deletions_file)
 else:
