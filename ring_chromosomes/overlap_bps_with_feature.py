@@ -29,7 +29,8 @@ def process_iteration(i, fun, gaps, bp_file, genome, feature_file):
         shufflep = subprocess.Popen(['shuffleBed', '-excl', gaps, '-i', bp_file, '-g', genome, '-chrom'], stdout=subprocess.PIPE)
     else:
         shufflep = subprocess.Popen(['shuffleBed', '-i', bp_file, '-g', genome, '-chrom'], stdout=subprocess.PIPE)
-    shuffled = shufflep.communicate()[0]
+    sortp = subprocess.Popen('sort -k1,1 -k2,2n', stdin=shufflep.stdout, stdout=subprocess.PIPE)
+    shuffled = sortp.communicate()[0]
     hits = fun(feature_file, 'stdin', input=shuffled)
     #    out_file.write(str(i) + "\t" + str(hits) + "\n")
     return (i, hits)
